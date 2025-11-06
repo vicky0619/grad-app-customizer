@@ -25,4 +25,55 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Programs table - stores target master's program information
+ */
+export const programs = mysqlTable("programs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  universityName: varchar("universityName", { length: 255 }).notNull(),
+  programName: varchar("programName", { length: 255 }).notNull(),
+  country: varchar("country", { length: 100 }),
+  status: mysqlEnum("status", ["draft", "researching", "generating", "completed"]).default("draft").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Program = typeof programs.$inferSelect;
+export type InsertProgram = typeof programs.$inferInsert;
+
+/**
+ * Program research table - stores LLM-searched program information
+ */
+export const programResearch = mysqlTable("program_research", {
+  id: int("id").autoincrement().primaryKey(),
+  programId: int("programId").notNull(),
+  courses: text("courses"),
+  facultyMembers: text("facultyMembers"),
+  requirements: text("requirements"),
+  uniqueCharacteristics: text("uniqueCharacteristics"),
+  researchAreas: text("researchAreas"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProgramResearch = typeof programResearch.$inferSelect;
+export type InsertProgramResearch = typeof programResearch.$inferInsert;
+
+/**
+ * Documents table - stores original and generated application documents
+ */
+export const documents = mysqlTable("documents", {
+  id: int("id").autoincrement().primaryKey(),
+  programId: int("programId").notNull(),
+  documentType: mysqlEnum("documentType", ["original_cv", "original_sop", "original_lor", "generated_cv", "generated_sop", "generated_lor"]).notNull(),
+  fileUrl: varchar("fileUrl", { length: 500 }).notNull(),
+  fileKey: varchar("fileKey", { length: 500 }).notNull(),
+  fileName: varchar("fileName", { length: 255 }),
+  content: text("content"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Document = typeof documents.$inferSelect;
+export type InsertDocument = typeof documents.$inferInsert;

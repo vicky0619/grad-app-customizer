@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, programs, documents, programResearch, InsertProgram, InsertDocument, InsertProgramResearch } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,73 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Program queries
+export async function createProgram(program: InsertProgram) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(programs).values(program);
+  return result[0].insertId;
+}
+
+export async function getUserPrograms(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(programs).where(eq(programs.userId, userId)).orderBy(desc(programs.updatedAt));
+}
+
+export async function getProgramById(programId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(programs).where(eq(programs.id, programId)).limit(1);
+  return result[0];
+}
+
+export async function updateProgramStatus(programId: number, status: "draft" | "researching" | "generating" | "completed") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(programs).set({ status, updatedAt: new Date() }).where(eq(programs.id, programId));
+}
+
+// Document queries
+export async function createDocument(document: InsertDocument) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(documents).values(document);
+  return result[0].insertId;
+}
+
+export async function getProgramDocuments(programId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(documents).where(eq(documents.programId, programId)).orderBy(desc(documents.createdAt));
+}
+
+export async function getDocumentByType(programId: number, documentType: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(documents).where(
+    and(eq(documents.programId, programId), sql`${documents.documentType} = ${documentType}`)
+  ).limit(1);
+  return result[0];
+}
+
+// Program research queries
+export async function createProgramResearch(research: InsertProgramResearch) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(programResearch).values(research);
+  return result[0].insertId;
+}
+
+export async function getProgramResearch(programId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(programResearch).where(eq(programResearch.programId, programId)).limit(1);
+  return result[0];
+}
+
+export async function updateProgramResearch(programId: number, data: Partial<InsertProgramResearch>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(programResearch).set({ ...data, updatedAt: new Date() }).where(eq(programResearch.programId, programId));
+}
