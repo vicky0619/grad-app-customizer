@@ -24,6 +24,8 @@ export default function ProgramDetail() {
     { enabled: programId > 0 }
   );
 
+  const hasResearch = research !== null && research !== undefined;
+
   const { data: documents, refetch: refetchDocuments } = trpc.programs.getDocuments.useQuery(
     { programId },
     { enabled: programId > 0 }
@@ -211,7 +213,7 @@ export default function ProgramDetail() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {!research ? (
+                {!hasResearch ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground mb-4">尚未研究此項目</p>
                     <Button
@@ -257,35 +259,35 @@ export default function ProgramDetail() {
                       <div>
                         <h3 className="text-lg font-semibold mb-2">課程設置</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research.courses}</Streamdown>
+                          <Streamdown>{research?.courses || ""}</Streamdown>
                         </div>
                       </div>
 
                       <div>
                         <h3 className="text-lg font-semibold mb-2">教職員</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research.facultyMembers}</Streamdown>
+                          <Streamdown>{research?.facultyMembers || ""}</Streamdown>
                         </div>
                       </div>
 
                       <div>
                         <h3 className="text-lg font-semibold mb-2">入學要求</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research.requirements}</Streamdown>
+                          <Streamdown>{research?.requirements || ""}</Streamdown>
                         </div>
                       </div>
 
                       <div>
                         <h3 className="text-lg font-semibold mb-2">項目特色</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research.uniqueCharacteristics}</Streamdown>
+                          <Streamdown>{research?.uniqueCharacteristics || ""}</Streamdown>
                         </div>
                       </div>
 
                       <div>
                         <h3 className="text-lg font-semibold mb-2">研究領域</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research.researchAreas}</Streamdown>
+                          <Streamdown>{research?.researchAreas || ""}</Streamdown>
                         </div>
                       </div>
                     </div>
@@ -316,7 +318,7 @@ export default function ProgramDetail() {
                           <p className="text-muted-foreground mb-4">尚未生成此文檔</p>
                           <Button
                             onClick={() => handleGenerate(type as "cv" | "sop" | "lor")}
-                            disabled={generateDocument.isPending || !research}
+                            disabled={generateDocument.isPending || !hasResearch}
                             className="gap-2"
                           >
                             {generateDocument.isPending ? (
@@ -331,7 +333,7 @@ export default function ProgramDetail() {
                               </>
                             )}
                           </Button>
-                          {!research && (
+                          {!hasResearch && (
                             <p className="text-sm text-muted-foreground mt-2">
                               請先完成項目研究
                             </p>

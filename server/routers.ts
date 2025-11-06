@@ -171,7 +171,8 @@ Format your response as JSON with keys: courses, facultyMembers, requirements, u
         if (!program || program.userId !== ctx.user.id) {
           throw new TRPCError({ code: "NOT_FOUND" });
         }
-        return await db.getProgramResearch(input.programId);
+        const research = await db.getProgramResearch(input.programId);
+        return research || null;
       }),
     
     generateDocument: protectedProcedure

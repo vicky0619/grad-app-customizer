@@ -40,4 +40,8 @@
 - [x] 測試文件上傳功能
 - [x] 測試LLM搜索功能
 - [x] 測試文檔生成功能
-- [ ] 創建checkpoint準備部署
+- [x] 創建checkpoint準備部署
+
+## Bug Fixes
+
+- [x] 修復getResearch返回undefined的錯誤
