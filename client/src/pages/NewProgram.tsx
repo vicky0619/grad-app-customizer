@@ -1,37 +1,26 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/lib/trpc";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Upload } from "lucide-react";
-import { Link } from "wouter";
+import { ArrowLeft, GraduationCap } from "lucide-react";
 
 export default function NewProgram() {
   const [, setLocation] = useLocation();
   const [universityName, setUniversityName] = useState("");
   const [programName, setProgramName] = useState("");
   const [country, setCountry] = useState("");
-  const [cvText, setCvText] = useState("");
-  const [sopText, setSopText] = useState("");
-  const [lorText, setLorText] = useState("");
 
   const createProgram = trpc.programs.create.useMutation();
-  const uploadDocument = trpc.programs.uploadDocument.useMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!universityName || !programName) {
       toast.error("請填寫大學名稱和項目名稱");
-      return;
-    }
-
-    if (!cvText || !sopText || !lorText) {
-      toast.error("請填寫所有原始文件內容(CV、SoP、LoR)");
       return;
     }
 
@@ -43,22 +32,6 @@ export default function NewProgram() {
       });
 
       const programId = result.programId;
-
-      // Upload documents
-      const uploads = [
-        { text: cvText, type: 'original_cv' as const },
-        { text: sopText, type: 'original_sop' as const },
-        { text: lorText, type: 'original_lor' as const },
-      ];
-
-      for (const { text, type } of uploads) {
-        await uploadDocument.mutateAsync({
-          programId,
-          documentType: type,
-          textContent: text,
-        });
-      }
-
       toast.success("項目創建成功!");
       setLocation(`/programs/${programId}`);
     } catch (error) {
@@ -67,37 +40,42 @@ export default function NewProgram() {
     }
   };
 
-  const isLoading = createProgram.isPending || uploadDocument.isPending;
+  const isLoading = createProgram.isPending;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container py-8 max-w-4xl">
-        <Link href="/programs">
-          <Button variant="ghost" className="mb-6 gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            返回項目列表
-          </Button>
-        </Link>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="container max-w-3xl py-12">
+        <Button
+          variant="ghost"
+          onClick={() => setLocation("/programs")}
+          className="mb-6"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          返回項目列表
+        </Button>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">新建申請項目</CardTitle>
-            <CardDescription>
-              填寫項目信息並輸入您之前的申請材料文字內容,我們將幫您客製化適合目標項目的文件
-            </CardDescription>
+        <Card className="shadow-lg">
+          <CardHeader className="space-y-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
+            <div className="flex items-center gap-3">
+              <GraduationCap className="h-8 w-8" />
+              <div>
+                <CardTitle className="text-2xl">創建新項目</CardTitle>
+                <CardDescription className="text-blue-100">
+                  填寫目標校系信息,開始客製化您的申請材料
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">項目信息</h3>
-                
                 <div className="space-y-2">
                   <Label htmlFor="universityName">大學名稱 *</Label>
                   <Input
                     id="universityName"
-                    placeholder="例如: Stanford University"
                     value={universityName}
                     onChange={(e) => setUniversityName(e.target.value)}
+                    placeholder="例如: Stanford University"
                     required
                   />
                 </div>
@@ -106,92 +84,51 @@ export default function NewProgram() {
                   <Label htmlFor="programName">項目名稱 *</Label>
                   <Input
                     id="programName"
-                    placeholder="例如: Master of Science in Computer Science"
                     value={programName}
                     onChange={(e) => setProgramName(e.target.value)}
+                    placeholder="例如: Master of Science in Computer Science"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="country">國家/地區</Label>
+                  <Label htmlFor="country">國家/地區 (可選)</Label>
                   <Input
                     id="country"
-                    placeholder="例如: United States"
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
+                    placeholder="例如: United States"
                   />
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">原始申請材料</h3>
-                <p className="text-sm text-muted-foreground">
-                  請輸入您之前申請其他學校時使用的文字內容,我們將基於這些文件為您生成客製化版本
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>提示:</strong> 創建項目後,您可以:
                 </p>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cv">CV (Curriculum Vitae) *</Label>
-                  <Textarea
-                    id="cv"
-                    placeholder="請輸入您的CV文字內容..."
-                    value={cvText}
-                    onChange={(e) => setCvText(e.target.value)}
-                    required
-                    rows={8}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {cvText.length} 字符
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="sop">Statement of Purpose *</Label>
-                  <Textarea
-                    id="sop"
-                    placeholder="請輸入您的SoP文字內容..."
-                    value={sopText}
-                    onChange={(e) => setSopText(e.target.value)}
-                    required
-                    rows={8}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {sopText.length} 字符
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="lor">Letter of Recommendation *</Label>
-                  <Textarea
-                    id="lor"
-                    placeholder="請輸入您的LoR文字內容..."
-                    value={lorText}
-                    onChange={(e) => setLorText(e.target.value)}
-                    required
-                    rows={8}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {lorText.length} 字符
-                  </p>
-                </div>
+                <ul className="text-sm text-blue-700 mt-2 space-y-1 list-disc list-inside">
+                  <li>使用AI搜索項目的詳細信息(課程、教職員、要求等)</li>
+                  <li>基於您在範本管理中上傳的範本生成客製化文檔</li>
+                  <li>下載生成的CV(LaTeX)、SoP和LoR文檔</li>
+                </ul>
               </div>
 
-              <div className="flex gap-4">
-                <Button type="submit" size="lg" disabled={isLoading} className="flex-1">
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      創建中...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      創建項目
-                    </>
-                  )}
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setLocation("/programs")}
+                  disabled={isLoading}
+                  className="flex-1"
+                >
+                  取消
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                >
+                  {isLoading ? "創建中..." : "創建項目"}
                 </Button>
               </div>
             </form>

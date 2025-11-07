@@ -22,6 +22,20 @@
       "when": 1762479050046,
       "tag": "0002_cloudy_vertigo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1762482570842,
+      "tag": "0003_tired_the_renegades",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1762482617320,
+      "tag": "0004_next_korg",
+      "breakpoints": true
     }
   ]
 }

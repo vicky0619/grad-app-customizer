@@ -1,6 +1,6 @@
-import { eq, and, desc, sql } from "drizzle-orm";
+import { and, eq, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, programs, documents, programResearch, InsertProgram, InsertDocument, InsertProgramResearch } from "../drizzle/schema";
+import { InsertUser, users, programs, documents, programResearch, templates, InsertProgram, InsertDocument, InsertProgramResearch, Template, InsertTemplate } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -158,4 +158,60 @@ export async function updateProgramResearch(programId: number, data: Partial<Ins
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(programResearch).set({ ...data, updatedAt: new Date() }).where(eq(programResearch.programId, programId));
+}
+
+// Template management functions
+export async function createTemplate(template: InsertTemplate): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(templates).values(template);
+  return Number(result[0].insertId);
+}
+
+export async function getUserTemplates(userId: number): Promise<Template[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(templates).where(eq(templates.userId, userId));
+}
+
+export async function getTemplateById(id: number): Promise<Template | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(templates).where(eq(templates.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserTemplatesByType(
+  userId: number,
+  documentType: "cv" | "sop" | "lor"
+): Promise<Template[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(templates).where(
+    and(
+      eq(templates.userId, userId),
+      eq(templates.documentType, documentType)
+    )
+  );
+}
+
+export async function updateTemplate(
+  id: number,
+  updates: { name?: string; content?: string }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(templates).set(updates).where(eq(templates.id, id));
+}
+
+export async function deleteTemplate(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(templates).where(eq(templates.id, id));
 }

@@ -292,6 +292,18 @@ export default function ProgramDetail() {
                       </div>
 
                       <div>
+                        <h3 className="text-lg font-semibold mb-2">項目取向</h3>
+                        <div className="prose prose-sm max-w-none">
+                          <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium">
+                            {research?.programOrientation === "job_hunting" && "💼 找工取向"}
+                            {research?.programOrientation === "employment" && "🏭 就業取向"}
+                            {research?.programOrientation === "entrepreneurship" && "🚀 新創取向"}
+                            {research?.programOrientation === "mixed" && "🌐 混合取向"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
                         <h3 className="text-lg font-semibold mb-2">畢業要求和規劃</h3>
                         <div className="prose prose-sm max-w-none">
                           <Streamdown>{research?.graduationRequirements || ""}</Streamdown>

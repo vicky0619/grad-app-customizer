@@ -55,6 +55,12 @@ export const programResearch = mysqlTable("program_research", {
   researchAreas: text("researchAreas"),
   graduationRequirements: text("graduationRequirements"),
   careerResources: text("careerResources"),
+  programOrientation: mysqlEnum("programOrientation", [
+    "job_hunting",
+    "employment",
+    "entrepreneurship",
+    "mixed"
+  ]),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -73,9 +79,33 @@ export const documents = mysqlTable("documents", {
   fileKey: varchar("fileKey", { length: 500 }).notNull(),
   fileName: varchar("fileName", { length: 255 }),
   content: text("content"),
+  templateId: int("templateId"),
+  selectionReasoning: text("selectionReasoning"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export type Document = typeof documents.$inferSelect;
 export type InsertDocument = typeof documents.$inferInsert;
+
+/**
+ * Templates table - stores user's document templates
+ */
+export const templates = mysqlTable("templates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  documentType: mysqlEnum("documentType", ["cv", "sop", "lor"]).notNull(),
+  orientation: mysqlEnum("orientation", [
+    "general",
+    "job_hunting",
+    "employment",
+    "entrepreneurship"
+  ]).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Template = typeof templates.$inferSelect;
+export type InsertTemplate = typeof templates.$inferInsert;
