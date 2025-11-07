@@ -473,7 +473,14 @@ ${input.userInstructions}
             throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
           }
           
-          const responseData = JSON.parse(responseContent);
+          // Clean markdown code blocks from LLM response
+          const cleanedContent = responseContent
+            .replace(/^```json\s*/, '')
+            .replace(/^```\s*/, '')
+            .replace(/\s*```$/, '')
+            .trim();
+          
+          const responseData = JSON.parse(cleanedContent);
           const generatedContent = responseData.content;
           const changesLog = JSON.stringify(responseData.changes, null, 2);
           
@@ -592,7 +599,14 @@ ${input.documentType === 'cv' ? '注意: content欄位應使用標準LaTeX格式
             throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
           }
           
-          const responseData = JSON.parse(responseContent);
+          // Clean markdown code blocks from LLM response
+          const cleanedContent = responseContent
+            .replace(/^```json\s*/, '')
+            .replace(/^```\s*/, '')
+            .replace(/\s*```$/, '')
+            .trim();
+          
+          const responseData = JSON.parse(cleanedContent);
           const generatedContent = responseData.content;
           const changesLog = JSON.stringify(responseData.changes, null, 2);
           

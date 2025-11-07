@@ -92,3 +92,7 @@
 - [x] 添加重新生成功能(基於討論結果)
 - [x] 修復技術方向判斷邏輯(確保正確識別AI/ML/System等)
 - [x] 改進LLM prompt確保完整讀取研究結果
+
+## Bug Fixes
+
+- [x] 修復LLM返回JSON被markdown代碼塊包裹導致解析失敗的問題
