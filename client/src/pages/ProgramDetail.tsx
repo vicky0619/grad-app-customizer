@@ -303,6 +303,42 @@ export default function ProgramDetail() {
                         </div>
                       </div>
 
+                      {research?.technicalFocus && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2">技術方向</h3>
+                          <div className="prose prose-sm max-w-none">
+                            <Streamdown>{research.technicalFocus}</Streamdown>
+                          </div>
+                        </div>
+                      )}
+
+                      {research?.requiredCourses && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2">必修課程</h3>
+                          <div className="prose prose-sm max-w-none">
+                            <Streamdown>{research.requiredCourses}</Streamdown>
+                          </div>
+                        </div>
+                      )}
+
+                      {research?.electiveCourses && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2">選修課程</h3>
+                          <div className="prose prose-sm max-w-none">
+                            <Streamdown>{research.electiveCourses}</Streamdown>
+                          </div>
+                        </div>
+                      )}
+
+                      {research?.trackOptions && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2">Track選項</h3>
+                          <div className="prose prose-sm max-w-none">
+                            <Streamdown>{research.trackOptions}</Streamdown>
+                          </div>
+                        </div>
+                      )}
+
                       <div>
                         <h3 className="text-lg font-semibold mb-2">畢業要求和規劃</h3>
                         <div className="prose prose-sm max-w-none">

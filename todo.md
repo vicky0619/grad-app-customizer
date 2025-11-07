@@ -69,3 +69,13 @@
 - [x] 實現智能範本選擇邏輯
 - [x] 更新生成文檔API使用範本系統
 - [x] 簡化新建項目流程(只填學校信息,不需上傳文件)
+
+## Enhanced Keyword Replacement & Course Research
+
+- [x] 更新研究prompt分析項目技術方向(NLP/ML/AI/System/Network等)
+- [x] 更新研究prompt搜索必修課和選修課詳細列表
+- [x] 更新研究prompt搜索non-thesis和coursework track信息
+- [x] 更新研究prompt搜索推薦課表和選課建議
+- [x] 更新生成文檔prompt智能替換技術關鍵字
+- [x] 更新生成文檔prompt根據項目方向調整經歷描述
+- [x] 添加技術方向欄位到program_research表

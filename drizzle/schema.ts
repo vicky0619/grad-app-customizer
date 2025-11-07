@@ -61,6 +61,10 @@ export const programResearch = mysqlTable("program_research", {
     "entrepreneurship",
     "mixed"
   ]),
+  technicalFocus: text("technicalFocus"),
+  requiredCourses: text("requiredCourses"),
+  electiveCourses: text("electiveCourses"),
+  trackOptions: text("trackOptions"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

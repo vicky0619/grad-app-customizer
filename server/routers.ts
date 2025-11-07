@@ -123,12 +123,13 @@ export const appRouter = router({
 項目: ${program.programName}
 ${program.country ? `國家: ${program.country}` : ''}
 
-請提供以下八個方面的詳細信息:
+請提供以下方面的詳細信息:
 
 1. **課程設置** (Courses)
-   - 核心課程列表
-   - 選修課程方向
+   - 完整的核心課程(required courses)列表,包含課程代碼和名稱
+   - 選修課程(elective courses)方向和具體課程列表
    - 課程結構和學分要求
+   - 搜索網路上其他學生推薦的課表和選課建議
 
 2. **教職員信息** (Faculty Members)
    - 重點教授名單及其研究方向
@@ -172,6 +173,42 @@ ${program.country ? `國家: ${program.country}` : ''}
    - entrepreneurship (新創取向): 提供創業支持、孵化器、創新創業課程
    - mixed (混合取向): 兼具多種取向特徵
 
+9. **技術方向** (Technical Focus)
+   請仔細分析項目的技術重點,判斷主要focus在以下哪些方向(可多選):
+   - NLP (Natural Language Processing): 自然語言處理、語言模型、文本分析
+   - ML (Machine Learning): 機器學習、深度學習、模型訓練
+   - AI (Artificial Intelligence): 人工智能、計算機視覺、強化學習
+   - System (Systems): 分佈式系統、操作系統、雲計算
+   - Network (Networking): 網絡安全、網絡協議、通信系統
+   - Data (Data Science): 數據分析、大數據、數據工程
+   - HCI (Human-Computer Interaction): 人機交互、用戶體驗
+   - Other: 其他方向
+   
+   請根據課程設置、教授研究方向、項目特色來判斷,並列出該項目最重視的2-3個技術方向。
+
+10. **必修課程詳細列表** (Required Courses)
+   列出所有必修課程,包含:
+   - 課程代碼
+   - 課程名稱
+   - 學分數
+   - 課程簡介
+
+11. **選修課程詳細列表** (Elective Courses)
+   列出主要選修課程,按方向分類:
+   - 課程代碼
+   - 課程名稱
+   - 學分數
+   - 所屬方向
+
+12. **Track選項** (Track Options)
+   詳細說明項目提供的track選項:
+   - Non-thesis track: 要求、課程安排、適合對象
+   - Thesis track: 要求、研究內容、適合對象
+   - Coursework track: 要求、課程安排、適合對象
+   - 其他特殊track
+   
+   請特別關注non-thesis和coursework track的詳細信息。
+
 請盡可能詳細和具體,提供真實準確的信息。`;
         
         // Use LLM to search for program information
@@ -206,8 +243,12 @@ ${program.country ? `國家: ${program.country}` : ''}
                     enum: ["job_hunting", "employment", "entrepreneurship", "mixed"],
                     description: "Program orientation type"
                   },
+                  technicalFocus: { type: "string", description: "Technical focus areas (NLP/ML/AI/System/Network/Data/HCI)" },
+                  requiredCourses: { type: "string", description: "Detailed list of required courses" },
+                  electiveCourses: { type: "string", description: "Detailed list of elective courses" },
+                  trackOptions: { type: "string", description: "Track options (non-thesis, thesis, coursework)" },
                 },
-                required: ["courses", "facultyMembers", "requirements", "uniqueCharacteristics", "researchAreas", "graduationRequirements", "careerResources", "programOrientation"],
+                required: ["courses", "facultyMembers", "requirements", "uniqueCharacteristics", "researchAreas", "graduationRequirements", "careerResources", "programOrientation", "technicalFocus", "requiredCourses", "electiveCourses", "trackOptions"],
                 additionalProperties: false,
               },
             },
@@ -361,7 +402,11 @@ ${selection.should_blend ? `融合元素: ${selection.blend_elements.join(", ")}
 - 大學: ${program.universityName}
 - 項目: ${program.programName}
 - 項目取向: ${research.programOrientation}
+- 技術方向: ${research.technicalFocus}
 - 課程: ${research.courses}
+- 必修課程: ${research.requiredCourses}
+- 選修課程: ${research.electiveCourses}
+- Track選項: ${research.trackOptions}
 - 教職員: ${research.facultyMembers}
 - 項目特色: ${research.uniqueCharacteristics}
 - 研究領域: ${research.researchAreas}
@@ -373,15 +418,22 @@ ${selection.should_blend ? `融合元素: ${selection.blend_elements.join(", ")}
 2. **保持範本的故事架構、段落結構和邏輯流程**
 3. **不要改寫範本中的個人經歷、成就和背景描述**
 4. 只針對以下內容進行精準替換:
-   - 教授名字 → 替換為目標項目的相關教授
-   - 課程名稱 → 替換為目標項目的對應課程
+   - **技術關鍵字** → 根據項目技術方向(${research.technicalFocus})替換範本中的技術關鍵字
+     * 例如: 範本focus在Data,目標項目focus在AI,則將"data analysis"改為"AI model development"
+     * 例如: 範本focus在ML,目標項目focus在NLP,則將"machine learning"改為"natural language processing"
+     * 仔細分析項目的技術方向(NLP/ML/AI/System/Network/Data/HCI),將範本中的技術術語替換為目標方向的術語
+   - **經歷描述** → 根據項目技術方向調整經歷中的技術描述和關鍵字
+     * 突出與目標技術方向相關的技能和經驗
+     * 調整技術細節的描述方式以匹配目標方向
+   - 教授名字 → 替換為目標項目的相關教授(根據研究方向匹配)
+   - 課程名稱 → 替換為目標項目的對應課程(從必修和選修課程列表中選擇)
    - 研究關鍵字 → 調整為目標項目的研究領域關鍵字
    - Women in STEM社群 → 替換為目標項目的具體社群名稱
-   - 畢業規劃 → 調整為符合目標項目的要求
+   - 畢業規劃 → 調整為符合目標項目的要求(特別是non-thesis/coursework track)
    - 就業資源/創業支持 → 根據項目取向提及相應資源
    - 項目特色 → 自然融入目標項目的獨特優勢
 5. ${selection.should_blend ? '適當融合其他取向的元素,但保持主範本的核心風格' : ''}
-6. 確保修改後的內容流暢自然,符合項目取向
+6. 確保修改後的內容流暢自然,符合項目取向和技術方向
 
 輸出格式: 純文字
 
@@ -445,7 +497,11 @@ ${selectedTemplate.content}
 - 大學: ${program.universityName}
 - 項目: ${program.programName}
 - 項目取向: ${research.programOrientation}
+- 技術方向: ${research.technicalFocus}
 - 課程: ${research.courses}
+- 必修課程: ${research.requiredCourses}
+- 選修課程: ${research.electiveCourses}
+- Track選項: ${research.trackOptions}
 - 教職員: ${research.facultyMembers}
 - 項目特色: ${research.uniqueCharacteristics}
 - 研究領域: ${research.researchAreas}
@@ -457,6 +513,10 @@ ${selectedTemplate.content}
 2. **保持範本的故事架構和段落結構**
 3. **不要改寫範本中的個人經歷和成就**
 4. 只針對以下內容進行精準替換:
+   - **技術關鍵字** → 根據項目技術方向(${research.technicalFocus})替換範本中的技術關鍵字
+     * 仔細分析項目的技術方向(NLP/ML/AI/System/Network/Data/HCI),將範本中的技術術語替換為目標方向的術語
+   - **經歷描述** → 根據項目技術方向調整經歷中的技術描述和關鍵字
+     * 突出與目標技術方向相關的技能和經驗
    - 教授名字、課程名稱、研究關鍵字
    - Women in STEM社群名稱
    - 畢業規劃和就業資源
