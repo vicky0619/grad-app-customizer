@@ -103,3 +103,14 @@
 - [x] 在生成後顯示更動原因列表
 - [x] 實作討論對話框到文檔查看頁面
 - [x] 修復文字換行失敗問題(whitespace-pre-wrap)
+
+## Flexible Document Generation System
+
+- [ ] 更新研究prompt搜索admission requirements詳細信息(文件類型、字數限制、具體問題)
+- [ ] 添加admissionRequirements欄位到program_research表
+- [ ] 創建用戶確認/補充問題的UI界面
+- [ ] 實現多問題分開生成邏輯
+- [ ] 根據字數限制控制生成長度
+- [ ] 保留並排預覽功能(支持多問題格式)
+- [ ] 保留更動記錄功能(每個問題單獨記錄)
+- [ ] 保留討論功能(支持針對特定問題討論)

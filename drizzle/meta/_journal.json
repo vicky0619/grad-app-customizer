@@ -50,6 +50,13 @@
       "when": 1762485531093,
       "tag": "0006_useful_venus",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1762488006329,
+      "tag": "0007_useful_lyja",
+      "breakpoints": true
     }
   ]
 }

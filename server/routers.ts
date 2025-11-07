@@ -209,6 +209,17 @@ ${program.country ? `國家: ${program.country}` : ''}
    
    請特別關注non-thesis和coursework track的詳細信息。
 
+13. **申請文件要求** (Admission Document Requirements)
+   詳細說明申請時需要提交的文件,特別關注:
+   - 文件類型: Statement of Purpose / Personal Statement / Essay Questions / 其他
+   - 字數限制: 如果有明確限制請註明(例如: 500 words, 1000 words, 2 pages)
+   - 具體問題: 如果有多個問題需要回答,請列出每個問題的完整文字和字數限制
+   - 格式要求: 是否有特殊格式要求
+   
+   例如:
+   - 如果是標準SoP: {"documentType": "sop", "wordLimit": 1000}
+   - 如果是多個問題: {"documentType": "essay_questions", "questions": [{"question": "Why this program?", "wordLimit": 500}, {"question": "Career goals?", "wordLimit": 500}]}
+
 請盡可能詳細和具體,提供真實準確的信息。`;
         
         // Use LLM to search for program information
@@ -247,6 +258,8 @@ ${program.country ? `國家: ${program.country}` : ''}
                   requiredCourses: { type: "string", description: "Detailed list of required courses" },
                   electiveCourses: { type: "string", description: "Detailed list of elective courses" },
                   trackOptions: { type: "string", description: "Track options (non-thesis, thesis, coursework)" },
+                  recommendedCourses: { type: "string", description: "Recommended course selection" },
+                  admissionRequirements: { type: "string", description: "Admission document requirements in JSON format" },
                 },
                 required: ["courses", "facultyMembers", "requirements", "uniqueCharacteristics", "researchAreas", "graduationRequirements", "careerResources", "programOrientation", "technicalFocus", "requiredCourses", "electiveCourses", "trackOptions"],
                 additionalProperties: false,

@@ -65,6 +65,8 @@ export const programResearch = mysqlTable("program_research", {
   requiredCourses: text("requiredCourses"),
   electiveCourses: text("electiveCourses"),
   trackOptions: text("trackOptions"),
+  recommendedCourses: text("recommendedCourses"),
+  admissionRequirements: text("admissionRequirements"), // JSON string: {documentType, wordLimit, questions: [{question, wordLimit}]}
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

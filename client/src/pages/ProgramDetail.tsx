@@ -17,6 +17,7 @@ export default function ProgramDetail() {
   const [activeTab, setActiveTab] = useState("overview");
   const [userInstructions, setUserInstructions] = useState("");
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [admissionReqDialogOpen, setAdmissionReqDialogOpen] = useState(false);
   const [currentDocType, setCurrentDocType] = useState<"cv" | "sop" | "lor" | null>(null);
 
   const { data: program, isLoading: programLoading } = trpc.programs.getById.useQuery(
