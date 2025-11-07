@@ -114,3 +114,8 @@
 - [x] 保留並排預覽功能(支持多問題格式)
 - [x] 保留更動記錄功能(每個問題單獨記錄)
 - [x] 保留討論功能(支持針對特定問題討論)
+
+## Bug Fixes
+
+- [x] 修復DocumentDetail頁面API返回HTML的路由問題(添加useRoute導入)
+- [x] 修復討論API的LLM返回JSON解析錯誤(討論API返回純文字不需要JSON解析)
