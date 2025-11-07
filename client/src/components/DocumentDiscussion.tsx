@@ -85,10 +85,11 @@ export function DocumentDiscussion({ documentId, onRegenerateRequest, isRegenera
           <Button
             variant="outline"
             onClick={() => {
-              const latestUserMessage = discussions
-                ?.filter(d => d.role === "user")
-                .pop()?.message || "";
-              onRegenerateRequest(latestUserMessage);
+              // Build full discussion context
+              const discussionContext = discussions
+                ?.map(d => `${d.role === "user" ? "用戶" : "AI助手"}: ${d.message}`)
+                .join("\n\n") || "";
+              onRegenerateRequest(discussionContext);
             }}
             disabled={isRegenerating}
           >
