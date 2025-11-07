@@ -43,6 +43,13 @@
       "when": 1762484163491,
       "tag": "0005_nappy_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1762485531093,
+      "tag": "0006_useful_venus",
+      "breakpoints": true
     }
   ]
 }

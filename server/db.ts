@@ -1,6 +1,6 @@
 import { and, eq, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, programs, documents, programResearch, templates, InsertProgram, InsertDocument, InsertProgramResearch, Template, InsertTemplate } from "../drizzle/schema";
+import { InsertUser, users, programs, documents, programResearch, templates, documentDiscussions, InsertProgram, InsertDocument, InsertProgramResearch, Template, InsertTemplate, InsertDocumentDiscussion } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -214,4 +214,37 @@ export async function deleteTemplate(id: number): Promise<void> {
   if (!db) throw new Error("Database not available");
   
   await db.delete(templates).where(eq(templates.id, id));
+}
+
+// Document Discussion functions
+export async function createDiscussionMessage(discussion: InsertDocumentDiscussion) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(documentDiscussions).values(discussion);
+  return result[0].insertId;
+}
+
+export async function getDocumentDiscussions(documentId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db
+    .select()
+    .from(documentDiscussions)
+    .where(eq(documentDiscussions.documentId, documentId))
+    .orderBy(documentDiscussions.createdAt);
+}
+
+export async function getDocumentById(documentId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db
+    .select()
+    .from(documents)
+    .where(eq(documents.id, documentId))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
 }

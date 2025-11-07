@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Search, FileText, Download, Sparkles } from "lucide-react";
@@ -13,6 +15,9 @@ export default function ProgramDetail() {
   const [, params] = useRoute("/programs/:id");
   const programId = parseInt(params?.id || "0");
   const [activeTab, setActiveTab] = useState("overview");
+  const [userInstructions, setUserInstructions] = useState("");
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [currentDocType, setCurrentDocType] = useState<"cv" | "sop" | "lor" | null>(null);
 
   const { data: program, isLoading: programLoading } = trpc.programs.getById.useQuery(
     { programId },
@@ -95,7 +100,20 @@ export default function ProgramDetail() {
   };
 
   const handleGenerate = async (type: "cv" | "sop" | "lor") => {
-    await generateDocument.mutateAsync({ programId, documentType: type });
+    setCurrentDocType(type);
+    setGenerateDialogOpen(true);
+  };
+
+  const confirmGenerate = async () => {
+    if (!currentDocType) return;
+    await generateDocument.mutateAsync({ 
+      programId, 
+      documentType: currentDocType,
+      userInstructions: userInstructions || undefined,
+    });
+    setGenerateDialogOpen(false);
+    setUserInstructions("");
+    setCurrentDocType(null);
   };
 
   return (
@@ -437,6 +455,53 @@ export default function ProgramDetail() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>生成 {currentDocType?.toUpperCase()} 文檔</DialogTitle>
+            <DialogDescription>
+              您可以在下方輸入額外的指示或要求（可選）
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              placeholder="例如：請特別強調AI方向，因為UMD是AI top 2學校..."
+              value={userInstructions}
+              onChange={(e) => setUserInstructions(e.target.value)}
+              rows={5}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setGenerateDialogOpen(false);
+                  setUserInstructions("");
+                  setCurrentDocType(null);
+                }}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={confirmGenerate}
+                disabled={generateDocument.isPending}
+              >
+                {generateDocument.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    生成中...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    生成文檔
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

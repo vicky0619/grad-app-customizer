@@ -292,6 +292,7 @@ ${program.country ? `國家: ${program.country}` : ''}
       .input(z.object({
         programId: z.number(),
         documentType: z.enum(["cv", "sop", "lor"]),
+        userInstructions: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const program = await db.getProgramById(input.programId);
@@ -434,10 +435,25 @@ ${selection.should_blend ? `融合元素: ${selection.blend_elements.join(", ")}
    - 項目特色 → 自然融入目標項目的獨特優勢
 5. ${selection.should_blend ? '適當融合其他取向的元素,但保持主範本的核心風格' : ''}
 6. 確保修改後的內容流暢自然,符合項目取向和技術方向
+${input.userInstructions ? `
+用戶額外指示:
+${input.userInstructions}
+請特別注意並遵循用戶的額外要求。` : ''}
 
-輸出格式: 純文字
+輸出格式: JSON
+{
+  "content": "客製化後的完整SoP文字",
+  "changes": [
+    {
+      "type": "更動類型(技術關鍵字/經歷描述/教授名字/課程名稱/等)",
+      "original": "原始內容",
+      "modified": "修改後內容",
+      "reason": "修改原因(例如: UMD是AI top 2學校,強調AI方向)"
+    }
+  ]
+}
 
-請生成客製化的SoP。`;
+請生成客製化的SoP並詳細記錄所有更動。`;
 
           const generateResponse = await invokeLLM({
             messages: [
@@ -452,10 +468,14 @@ ${selection.should_blend ? `融合元素: ${selection.blend_elements.join(", ")}
             ],
           });
           
-          const generatedContent = generateResponse.choices[0].message.content;
-          if (typeof generatedContent !== 'string') {
+          const responseContent = generateResponse.choices[0].message.content;
+          if (typeof responseContent !== 'string') {
             throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
           }
+          
+          const responseData = JSON.parse(responseContent);
+          const generatedContent = responseData.content;
+          const changesLog = JSON.stringify(responseData.changes, null, 2);
           
           // Save generated document
           const randomSuffix = Math.random().toString(36).substring(7);
@@ -472,11 +492,21 @@ ${selection.should_blend ? `融合元素: ${selection.blend_elements.join(", ")}
             content: generatedContent,
             templateId: selectedTemplate.id,
             selectionReasoning,
+            changesLog,
+            userInstructions: input.userInstructions || null,
           });
           
           await db.updateProgramStatus(input.programId, "draft");
           
-          return { documentId, content: generatedContent, fileUrl: url, templateUsed: selectedTemplate.name, reasoning: selectionReasoning };
+          return { 
+            documentId, 
+            content: generatedContent, 
+            fileUrl: url, 
+            templateUsed: selectedTemplate.name, 
+            reasoning: selectionReasoning,
+            changes: responseData.changes,
+            originalTemplate: selectedTemplate.content,
+          };
           
         } else {
           // For CV and LoR, or single SoP template, use the first/only template
@@ -522,11 +552,27 @@ ${selectedTemplate.content}
    - 畢業規劃和就業資源
    - 項目特色
 5. 確保修改後的內容流暢自然
+${input.userInstructions ? `
+用戶額外指示:
+${input.userInstructions}
+請特別注意並遵循用戶的額外要求。` : ''}
 
-輸出格式: ${formatMap[input.documentType]}
-${input.documentType === 'cv' ? '- 使用標準LaTeX格式\n- 包含必要的文檔聲明\n- 確保可以直接編譯' : '- 純文字格式\n- 保持適當段落分隔'}
+輸出格式: JSON
+{
+  "content": "客製化後的完整${input.documentType.toUpperCase()}文字(${formatMap[input.documentType]}格式)",
+  "changes": [
+    {
+      "type": "更動類型(技術關鍵字/經歷描述/教授名字/課程名稱/等)",
+      "original": "原始內容",
+      "modified": "修改後內容",
+      "reason": "修改原因"
+    }
+  ]
+}
 
-請生成客製化的文檔。`;
+${input.documentType === 'cv' ? '注意: content欄位應使用標準LaTeX格式,包含必要的文檔聲明,確保可以直接編譯。' : '注意: content欄位應使用純文字格式,保持適當段落分隔。'}
+
+請生成客製化的${input.documentType.toUpperCase()}並詳細記錄所有更動。`;
 
           const generateResponse = await invokeLLM({
             messages: [
@@ -541,10 +587,14 @@ ${input.documentType === 'cv' ? '- 使用標準LaTeX格式\n- 包含必要的文
             ],
           });
           
-          const generatedContent = generateResponse.choices[0].message.content;
-          if (typeof generatedContent !== 'string') {
+          const responseContent = generateResponse.choices[0].message.content;
+          if (typeof responseContent !== 'string') {
             throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
           }
+          
+          const responseData = JSON.parse(responseContent);
+          const generatedContent = responseData.content;
+          const changesLog = JSON.stringify(responseData.changes, null, 2);
           
           // Save generated document
           const randomSuffix = Math.random().toString(36).substring(7);
@@ -563,11 +613,20 @@ ${input.documentType === 'cv' ? '- 使用標準LaTeX格式\n- 包含必要的文
             content: generatedContent,
             templateId: selectedTemplate.id,
             selectionReasoning: "Only one template available",
+            changesLog,
+            userInstructions: input.userInstructions || null,
           });
           
           await db.updateProgramStatus(input.programId, "draft");
           
-          return { documentId, content: generatedContent, fileUrl: url, templateUsed: selectedTemplate.name };
+          return { 
+            documentId, 
+            content: generatedContent, 
+            fileUrl: url, 
+            templateUsed: selectedTemplate.name,
+            changes: responseData.changes,
+            originalTemplate: selectedTemplate.content,
+          };
         }
       }),
     
@@ -579,6 +638,123 @@ ${input.documentType === 'cv' ? '- 使用標準LaTeX格式\n- 包含必要的文
           throw new TRPCError({ code: "NOT_FOUND" });
         }
         return await db.getProgramDocuments(input.programId);
+      }),
+    
+    getDocument: protectedProcedure
+      .input(z.object({ documentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const document = await db.getDocumentById(input.documentId);
+        if (!document) {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        const program = await db.getProgramById(document.programId);
+        if (!program || program.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        return document;
+      }),
+    
+    getDiscussions: protectedProcedure
+      .input(z.object({ documentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const document = await db.getDocumentById(input.documentId);
+        if (!document) {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        const program = await db.getProgramById(document.programId);
+        if (!program || program.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        return await db.getDocumentDiscussions(input.documentId);
+      }),
+    
+    discuss: protectedProcedure
+      .input(z.object({ 
+        documentId: z.number(),
+        message: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const document = await db.getDocumentById(input.documentId);
+        if (!document) {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        const program = await db.getProgramById(document.programId);
+        if (!program || program.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        
+        // Save user message
+        await db.createDiscussionMessage({
+          documentId: input.documentId,
+          userId: ctx.user.id,
+          role: "user",
+          message: input.message,
+        });
+        
+        // Get program research for context
+        const research = await db.getProgramResearch(program.id);
+        if (!research) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Program research not found" });
+        }
+        
+        // Get template used
+        let templateContent = "";
+        if (document.templateId) {
+          const template = await db.getTemplateById(document.templateId);
+          if (template) {
+            templateContent = template.content;
+          }
+        }
+        
+        // Call LLM for response
+        const discussionPrompt = `你是一個碩士申請文件客製化專家。用戶正在討論他們的${document.documentType}文檔。
+
+目標項目:
+- 大學: ${program.universityName}
+- 項目: ${program.programName}
+- 技術方向: ${research.technicalFocus}
+
+原始範本:
+${templateContent.substring(0, 1000)}...
+
+當前生成的文檔:
+${document.content?.substring(0, 1000)}...
+
+之前的更動記錄:
+${document.changesLog || "無"}
+
+用戶問題/意見:
+${input.message}
+
+請回應用戶的問題或意見,並提供具體的修改建議。如果用戶要求修改,請說明如何調整。`;
+        
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert in graduate school applications. Help users refine their customized documents."
+            },
+            {
+              role: "user",
+              content: discussionPrompt
+            }
+          ],
+        });
+        
+        const assistantMessage = response.choices[0].message.content;
+        if (typeof assistantMessage !== 'string') {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        }
+        
+        // Save assistant message
+        await db.createDiscussionMessage({
+          documentId: input.documentId,
+          userId: ctx.user.id,
+          role: "assistant",
+          message: assistantMessage,
+        });
+        
+        return { message: assistantMessage };
       }),
   }),
 });

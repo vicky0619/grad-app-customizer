@@ -85,6 +85,8 @@ export const documents = mysqlTable("documents", {
   content: text("content"),
   templateId: int("templateId"),
   selectionReasoning: text("selectionReasoning"),
+  changesLog: text("changesLog"),
+  userInstructions: text("userInstructions"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -113,3 +115,14 @@ export const templates = mysqlTable("templates", {
 
 export type Template = typeof templates.$inferSelect;
 export type InsertTemplate = typeof templates.$inferInsert;
+export const documentDiscussions = mysqlTable("document_discussions", {
+  id: int("id").autoincrement().primaryKey(),
+  documentId: int("documentId").notNull(),
+  userId: int("userId").notNull(),
+  role: mysqlEnum("role", ["user", "assistant"]).notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DocumentDiscussion = typeof documentDiscussions.$inferSelect;
+export type InsertDocumentDiscussion = typeof documentDiscussions.$inferInsert;
