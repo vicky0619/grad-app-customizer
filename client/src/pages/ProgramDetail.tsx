@@ -10,6 +10,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Search, FileText, Download, Sparkles } from "lucide-react";
 import { Streamdown } from "streamdown";
+import { AdmissionRequirementsDialog } from "@/components/AdmissionRequirementsDialog";
 
 export default function ProgramDetail() {
   const [, params] = useRoute("/programs/:id");
@@ -102,19 +103,33 @@ export default function ProgramDetail() {
 
   const handleGenerate = async (type: "cv" | "sop" | "lor") => {
     setCurrentDocType(type);
+    // For SoP, show admission requirements dialog first
+    if (type === "sop" && research?.admissionRequirements) {
+      setAdmissionReqDialogOpen(true);
+    } else {
+      setGenerateDialogOpen(true);
+    }
+  };
+
+  const handleAdmissionReqConfirm = (requirements: any) => {
+    // Store requirements for generation
+    (window as any).__admissionRequirements = requirements;
     setGenerateDialogOpen(true);
   };
 
   const confirmGenerate = async () => {
     if (!currentDocType) return;
+    const admissionReq = (window as any).__admissionRequirements;
     await generateDocument.mutateAsync({ 
       programId, 
       documentType: currentDocType,
       userInstructions: userInstructions || undefined,
+      admissionRequirements: admissionReq || undefined,
     });
     setGenerateDialogOpen(false);
     setUserInstructions("");
     setCurrentDocType(null);
+    delete (window as any).__admissionRequirements;
   };
 
   return (
@@ -526,6 +541,13 @@ export default function ProgramDetail() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AdmissionRequirementsDialog
+        open={admissionReqDialogOpen}
+        onOpenChange={setAdmissionReqDialogOpen}
+        initialRequirements={research?.admissionRequirements || null}
+        onConfirm={handleAdmissionReqConfirm}
+      />
     </div>
   );
 }

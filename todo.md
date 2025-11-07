@@ -106,11 +106,11 @@
 
 ## Flexible Document Generation System
 
-- [ ] 更新研究prompt搜索admission requirements詳細信息(文件類型、字數限制、具體問題)
-- [ ] 添加admissionRequirements欄位到program_research表
-- [ ] 創建用戶確認/補充問題的UI界面
-- [ ] 實現多問題分開生成邏輯
-- [ ] 根據字數限制控制生成長度
-- [ ] 保留並排預覽功能(支持多問題格式)
-- [ ] 保留更動記錄功能(每個問題單獨記錄)
-- [ ] 保留討論功能(支持針對特定問題討論)
+- [x] 更新研究prompt搜索admission requirements詳細信息(文件類型、字數限制、具體問題)
+- [x] 添加admissionRequirements欄位到program_research表
+- [x] 創建用戶確認/補充問題的UI界面
+- [x] 實現多問題分開生成邏輯
+- [x] 根據字數限制控制生成長度
+- [x] 保留並排預覽功能(支持多問題格式)
+- [x] 保留更動記錄功能(每個問題單獨記錄)
+- [x] 保留討論功能(支持針對特定問題討論)

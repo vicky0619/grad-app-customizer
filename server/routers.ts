@@ -306,6 +306,7 @@ ${program.country ? `國家: ${program.country}` : ''}
         programId: z.number(),
         documentType: z.enum(["cv", "sop", "lor"]),
         userInstructions: z.string().optional(),
+        admissionRequirements: z.any().optional(), // {documentType, wordLimit, questions}
       }))
       .mutation(async ({ ctx, input }) => {
         const program = await db.getProgramById(input.programId);
@@ -403,8 +404,74 @@ ${templatesInfo}
           selectedTemplate = templates[selection.selected_index - 1];
           selectionReasoning = selection.reasoning;
           
+          // Check if we have specific admission requirements
+          const admissionReq = input.admissionRequirements || (research.admissionRequirements ? JSON.parse(research.admissionRequirements) : null);
+          const isMultiQuestion = admissionReq?.documentType === "essay_questions" && admissionReq?.questions?.length > 0;
+          const wordLimit = admissionReq?.wordLimit || 1000;
+          
           // Generate document with selected template
-          const generatePrompt = `任務: 客製化 Statement of Purpose
+          const generatePrompt = isMultiQuestion ? 
+            `任務: 根據多個Essay Questions客製化申請文件
+
+選定範本: ${selectedTemplate.orientation === "job_hunting" ? "找工取向" : selectedTemplate.orientation === "employment" ? "就業取向" : selectedTemplate.orientation === "entrepreneurship" ? "新創取向" : "通用"}
+範本內容:
+${selectedTemplate.content}
+
+Essay Questions:
+${admissionReq.questions.map((q: any, i: number) => `
+問題 ${i + 1}: ${q.question}
+字數限制: ${q.wordLimit} words`).join('\n')}
+
+目標項目信息:
+- 大學: ${program.universityName}
+- 項目: ${program.programName}
+- 項目取向: ${research.programOrientation}
+- 技術方向: ${research.technicalFocus}
+- 課程: ${research.courses}
+- 必修課程: ${research.requiredCourses}
+- 選修課程: ${research.electiveCourses}
+- Track選項: ${research.trackOptions}
+- 教職員: ${research.facultyMembers}
+- 項目特色: ${research.uniqueCharacteristics}
+- 研究領域: ${research.researchAreas}
+- 畢業規劃: ${research.graduationRequirements}
+- 就業資源: ${research.careerResources}
+
+重要指示:
+1. **為每個問題單獨生成回答**
+2. **嚴格遵守每個問題的字數限制**
+3. **從範本中提取相關內容並重新組織以回答每個問題**
+4. **保持範本的語句、用詞、語氣和整體敘事風格**
+5. 根據項目技術方向(${research.technicalFocus})替換技術關鍵字
+6. 調整經歷描述以匹配項目特色
+${input.userInstructions ? `
+用戶額外指示:
+${input.userInstructions}
+請特別注意並遵循用戶的額外要求。` : ''}
+
+輸出格式: JSON
+{
+  "answers": [
+    {
+      "question": "問題文字",
+      "answer": "回答內容",
+      "wordCount": 實際字數
+    }
+  ],
+  "changes": [
+    {
+      "type": "更動類型",
+      "original": "原始內容",
+      "modified": "修改後內容",
+      "reason": "修改原因"
+    }
+  ]
+}
+
+請為每個問題生成回答並詳細記錄所有更動。` 
+            : `任務: 客製化 Statement of Purpose
+
+字數限制: ${wordLimit} words (±100)
 
 選定範本: ${selectedTemplate.orientation === "job_hunting" ? "找工取向" : selectedTemplate.orientation === "employment" ? "就業取向" : selectedTemplate.orientation === "entrepreneurship" ? "新創取向" : "通用"}
 範本內容:
@@ -455,7 +522,7 @@ ${input.userInstructions}
 
 輸出格式: JSON
 {
-  "content": "客製化後的完整SoP文字",
+  "content": "客製化後的完整SoP文字(${wordLimit} words ±100)",
   "changes": [
     {
       "type": "更動類型(技術關鍵字/經歷描述/教授名字/課程名稱/等)",
@@ -494,7 +561,19 @@ ${input.userInstructions}
             .trim();
           
           const responseData = JSON.parse(cleanedContent);
-          const generatedContent = responseData.content;
+          
+          // Handle different response formats
+          let generatedContent: string;
+          if (isMultiQuestion && responseData.answers) {
+            // Multi-question format: combine all answers
+            generatedContent = responseData.answers.map((a: any, i: number) => 
+              `Question ${i + 1}: ${a.question}\n\n${a.answer}\n\n(Word count: ${a.wordCount})`
+            ).join('\n\n---\n\n');
+          } else {
+            // Standard SoP format
+            generatedContent = responseData.content;
+          }
+          
           const changesLog = JSON.stringify(responseData.changes, null, 2);
           
           // Save generated document
