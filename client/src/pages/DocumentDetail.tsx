@@ -16,6 +16,10 @@ export default function DocumentDetail() {
     { enabled: documentId > 0 }
   );
 
+  // Get all templates to find the one used
+  const { data: templates } = trpc.templates.list.useQuery();
+  const template = templates?.find(t => t.id === document?.templateId);
+
   const generateMutation = trpc.programs.generateDocument.useMutation({
     onSuccess: () => {
       toast.success("文檔已重新生成");
@@ -48,7 +52,7 @@ export default function DocumentDetail() {
   }
 
   const changes = document.changesLog ? JSON.parse(document.changesLog) : [];
-  const originalTemplate = ""; // Will be fetched from template
+  const originalTemplate = template?.content || "";
 
   const handleRegenerateRequest = (feedback: string) => {
     if (!document) return;

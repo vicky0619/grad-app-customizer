@@ -96,3 +96,10 @@
 ## Bug Fixes
 
 - [x] 修復LLM返回JSON被markdown代碼塊包裹導致解析失敗的問題
+
+## UI Fixes
+
+- [x] 修復並排預覽功能未顯示的問題
+- [x] 在生成後顯示更動原因列表
+- [x] 實作討論對話框到文檔查看頁面
+- [x] 修復文字換行失敗問題(whitespace-pre-wrap)

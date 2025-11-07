@@ -38,13 +38,13 @@ export function DocumentViewer({ originalTemplate, customizedDocument, changes }
         <div className="grid grid-cols-2 gap-4">
           <Card className="p-4">
             <h3 className="font-semibold mb-2 text-gray-600">原始範本</h3>
-            <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm">
+            <div className="prose prose-sm max-w-none text-sm whitespace-pre-wrap">
               {originalTemplate}
             </div>
           </Card>
           <Card className="p-4">
             <h3 className="font-semibold mb-2 text-blue-600">客製化版本</h3>
-            <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm">
+            <div className="prose prose-sm max-w-none text-sm whitespace-pre-wrap">
               {customizedDocument}
             </div>
           </Card>

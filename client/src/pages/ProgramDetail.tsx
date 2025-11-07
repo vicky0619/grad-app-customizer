@@ -426,6 +426,12 @@ export default function ProgramDetail() {
                               生成於 {new Date(generatedDoc.createdAt).toLocaleString('zh-TW')}
                             </span>
                             <div className="flex gap-2">
+                              <Link href={`/documents/${generatedDoc.id}`}>
+                                <Button variant="default" size="sm">
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  查看詳情與討論
+                                </Button>
+                              </Link>
                               <a href={generatedDoc.fileUrl} target="_blank" rel="noopener noreferrer">
                                 <Button variant="outline" size="sm">
                                   <Download className="h-4 w-4 mr-2" />
@@ -442,9 +448,26 @@ export default function ProgramDetail() {
                               </Button>
                             </div>
                           </div>
-                          <div className="prose prose-sm max-w-none p-4 bg-muted rounded-lg">
-                            <Streamdown>{generatedDoc.content || ""}</Streamdown>
+                          <div className="prose prose-sm max-w-none p-4 bg-muted rounded-lg whitespace-pre-wrap">
+                            {generatedDoc.content || ""}
                           </div>
+                          {generatedDoc.changesLog && (
+                            <div className="mt-4">
+                              <h4 className="font-semibold mb-2">更動摘要</h4>
+                              <div className="space-y-2">
+                                {JSON.parse(generatedDoc.changesLog).slice(0, 3).map((change: any, idx: number) => (
+                                  <div key={idx} className="text-sm border-l-2 border-blue-500 pl-3 py-1">
+                                    <span className="font-medium">{change.type}:</span> {change.reason}
+                                  </div>
+                                ))}
+                                <Link href={`/documents/${generatedDoc.id}`}>
+                                  <Button variant="link" size="sm" className="p-0 h-auto">
+                                    查看完整更動記錄 →
+                                  </Button>
+                                </Link>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </CardContent>
