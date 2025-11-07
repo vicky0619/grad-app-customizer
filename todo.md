@@ -45,3 +45,15 @@
 ## Bug Fixes
 
 - [x] 修復getResearch返回undefined的錯誤
+
+## Workflow Improvements
+
+- [x] 修改前端上傳為純文字輸入(textarea)
+- [x] 更新後端uploadDocument API處理純文字
+- [x] 擴展LLM研究prompt包含7個方面(畢業規劃、就業資源等)
+- [x] 更新program_research表schema添加新欄位
+- [x] 修改生成文檔prompt強調保持原文風格
+- [x] 實現CV生成LaTeX格式輸出
+- [x] 實現SoP/LoR純文字格式輸出
+- [x] 添加信息完整性檢查和自動補充搜索
+- [x] 更新前端顯示新增的研究信息欄位

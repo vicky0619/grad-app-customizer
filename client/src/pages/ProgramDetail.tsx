@@ -290,6 +290,20 @@ export default function ProgramDetail() {
                           <Streamdown>{research?.researchAreas || ""}</Streamdown>
                         </div>
                       </div>
+
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">畢業要求和規劃</h3>
+                        <div className="prose prose-sm max-w-none">
+                          <Streamdown>{research?.graduationRequirements || ""}</Streamdown>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">就業資源</h3>
+                        <div className="prose prose-sm max-w-none">
+                          <Streamdown>{research?.careerResources || ""}</Streamdown>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}

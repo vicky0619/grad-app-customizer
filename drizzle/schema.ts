@@ -53,6 +53,8 @@ export const programResearch = mysqlTable("program_research", {
   requirements: text("requirements"),
   uniqueCharacteristics: text("uniqueCharacteristics"),
   researchAreas: text("researchAreas"),
+  graduationRequirements: text("graduationRequirements"),
+  careerResources: text("careerResources"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
