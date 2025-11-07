@@ -57,6 +57,7 @@ export default function DocumentDetail() {
   const handleRegenerateRequest = (feedback: string) => {
     if (!document) return;
     
+    toast.info("開始重新生成文檔...");
     const documentType = document.documentType.replace("generated_", "") as "cv" | "sop" | "lor";
     generateMutation.mutate({
       programId: document.programId,
@@ -104,6 +105,7 @@ export default function DocumentDetail() {
           <DocumentDiscussion
             documentId={documentId}
             onRegenerateRequest={handleRegenerateRequest}
+            isRegenerating={generateMutation.isPending}
           />
         </div>
       </div>

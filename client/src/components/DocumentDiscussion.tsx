@@ -9,9 +9,10 @@ import { Streamdown } from "streamdown";
 interface DocumentDiscussionProps {
   documentId: number;
   onRegenerateRequest: (feedback: string) => void;
+  isRegenerating?: boolean;
 }
 
-export function DocumentDiscussion({ documentId, onRegenerateRequest }: DocumentDiscussionProps) {
+export function DocumentDiscussion({ documentId, onRegenerateRequest, isRegenerating }: DocumentDiscussionProps) {
   const [message, setMessage] = useState("");
   const { data: discussions, refetch } = trpc.programs.getDiscussions.useQuery({ documentId });
   const discussMutation = trpc.programs.discuss.useMutation({
@@ -89,8 +90,16 @@ export function DocumentDiscussion({ documentId, onRegenerateRequest }: Document
                 .pop()?.message || "";
               onRegenerateRequest(latestUserMessage);
             }}
+            disabled={isRegenerating}
           >
-            根據討論重新生成
+            {isRegenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                生成中...
+              </>
+            ) : (
+              "根據討論重新生成"
+            )}
           </Button>
         </div>
       </div>

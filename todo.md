@@ -119,3 +119,5 @@
 
 - [x] 修復DocumentDetail頁面API返回HTML的路由問題(添加useRoute導入)
 - [x] 修復討論API的LLM返回JSON解析錯誤(討論API返回純文字不需要JSON解析)
+
+- [x] 修復根據討論重新生成功能沒有反應的問題(添加toast提示和loading狀態)
