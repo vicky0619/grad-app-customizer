@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -21,15 +22,17 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { FileText, LayoutDashboard, LogOut, PanelLeft, Settings } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: LayoutDashboard, label: "首頁", path: "/" },
+  { icon: FileText, label: "我的學校", path: "/programs" },
+  { icon: FileText, label: "我的模板", path: "/templates" },
+  { icon: Settings, label: "設定", path: "/settings" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -42,6 +45,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [, navigate] = useLocation();
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
@@ -78,13 +82,11 @@ export default function DashboardLayout({
             </div>
           </div>
           <Button
-            onClick={() => {
-              window.location.href = getLoginUrl();
-            }}
+            onClick={() => navigate(getLoginUrl())}
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >
-            Sign in
+            登入
           </Button>
         </div>
       </div>
@@ -123,6 +125,12 @@ function DashboardLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
+  const settingsQuery = trpc.auth.getSettings.useQuery(undefined, {
+    enabled: !!user,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const needsApiKey = user && settingsQuery.data && !settingsQuery.data.hasApiKey;
 
   useEffect(() => {
     if (isCollapsed) {
@@ -284,6 +292,17 @@ function DashboardLayoutContent({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+        {needsApiKey && location !== "/settings" && (
+          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between text-sm text-amber-800">
+            <span>請先設定 API Key 才能使用 AI 功能</span>
+            <button
+              onClick={() => setLocation("/settings")}
+              className="font-medium underline hover:no-underline"
+            >
+              前往設定
+            </button>
           </div>
         )}
         <main className="flex-1 p-4">{children}</main>
