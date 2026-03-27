@@ -10,6 +10,16 @@ import { sdk } from "./_core/sdk";
 import { hashPassword, verifyPassword } from "./_core/password";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
+import { encrypt, decrypt } from "./_core/crypto";
+import type { LLMConfig } from "./_core/llm";
+
+function getUserLLMConfig(user: { llmApiKey?: string | null; llmBaseUrl?: string | null; llmModel?: string | null }): LLMConfig {
+  return {
+    apiKey: user.llmApiKey ? decrypt(user.llmApiKey) : undefined,
+    baseUrl: user.llmBaseUrl ?? undefined,
+    model: user.llmModel ?? undefined,
+  };
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -61,6 +71,31 @@ export const appRouter = router({
         const token = await sdk.createSessionToken(openId, { name: input.name });
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true } as const;
+      }),
+    getSettings: protectedProcedure.query(async ({ ctx }) => {
+      return {
+        hasApiKey: !!ctx.user.llmApiKey,
+        llmBaseUrl: ctx.user.llmBaseUrl ?? "",
+        llmModel: ctx.user.llmModel ?? "",
+      };
+    }),
+    saveSettings: protectedProcedure
+      .input(z.object({
+        apiKey: z.string().optional(),
+        llmBaseUrl: z.string(),
+        llmModel: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const update: Parameters<typeof db.upsertUser>[0] = {
+          openId: ctx.user.openId,
+          llmBaseUrl: input.llmBaseUrl || null,
+          llmModel: input.llmModel || null,
+        };
+        if (input.apiKey && input.apiKey.trim().length > 0) {
+          update.llmApiKey = encrypt(input.apiKey.trim());
+        }
+        await db.upsertUser(update);
         return { success: true } as const;
       }),
   }),
@@ -310,8 +345,8 @@ ${program.country ? `國家: ${program.country}` : ''}
               },
             },
           },
-        });
-        
+        }, getUserLLMConfig(ctx.user));
+
         const content = response.choices[0].message.content;
         if (typeof content !== 'string') {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Invalid LLM response" });
@@ -438,8 +473,8 @@ ${templatesInfo}
                 },
               },
             },
-          });
-          
+          }, getUserLLMConfig(ctx.user));
+
           const selectionContent = selectionResponse.choices[0].message.content;
           if (typeof selectionContent !== 'string') {
             throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -602,8 +637,8 @@ ${input.userInstructions}
                 content: generatePrompt
               }
             ],
-          });
-          
+          }, getUserLLMConfig(ctx.user));
+
           const responseContent = generateResponse.choices[0].message.content;
           if (typeof responseContent !== 'string') {
             throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -746,8 +781,8 @@ ${input.documentType === 'cv' ? '注意: content欄位應使用標準LaTeX格式
                 content: generatePrompt
               }
             ],
-          });
-          
+          }, getUserLLMConfig(ctx.user));
+
           const responseContent = generateResponse.choices[0].message.content;
           if (typeof responseContent !== 'string') {
             throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -907,8 +942,8 @@ ${input.message}
               content: discussionPrompt
             }
           ],
-        });
-        
+        }, getUserLLMConfig(ctx.user));
+
         const assistantMessage = response.choices[0].message.content;
         if (typeof assistantMessage !== 'string') {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
