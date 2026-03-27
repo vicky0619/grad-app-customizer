@@ -17,6 +17,9 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   passwordHash: text("passwordHash"),
+  llmApiKey: text("llmApiKey"),           // encrypted, see server/_core/crypto.ts
+  llmBaseUrl: varchar("llmBaseUrl", { length: 500 }),
+  llmModel: varchar("llmModel", { length: 100 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
