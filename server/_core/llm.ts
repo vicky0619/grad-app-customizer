@@ -209,15 +209,10 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://forge.manus.im/v1/chat/completions";
-
-const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
-  }
+export type LLMConfig = {
+  apiKey?: string;
+  baseUrl?: string;
+  model?: string;
 };
 
 const normalizeResponseFormat = ({
@@ -265,8 +260,18 @@ const normalizeResponseFormat = ({
   };
 };
 
-export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  assertApiKey();
+export async function invokeLLM(params: InvokeParams, config?: LLMConfig): Promise<InvokeResult> {
+  const apiKey = config?.apiKey ?? ENV.forgeApiKey;
+  const baseUrl = config?.baseUrl ?? ENV.forgeApiUrl;
+  const model = config?.model ?? ENV.llmModel;
+
+  if (!apiKey) {
+    throw new Error("LLM API key is not configured. Please set your API key in Settings.");
+  }
+
+  const apiUrl = baseUrl && baseUrl.trim().length > 0
+    ? `${baseUrl.replace(/\/$/, "")}/chat/completions`
+    : "https://forge.manus.im/v1/chat/completions";
 
   const {
     messages,
@@ -280,7 +285,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: ENV.llmModel,
+    model,
     messages: messages.map(normalizeMessage),
   };
 
@@ -312,11 +317,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
+  const response = await fetch(apiUrl, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(payload),
   });
