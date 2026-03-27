@@ -11,12 +11,14 @@ import NewProgram from "./pages/NewProgram";
 import ProgramDetail from "./pages/ProgramDetail";
 import Templates from "./pages/Templates";
 import DocumentDetail from "./pages/DocumentDetail";
+import Settings from "./pages/Settings";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/login"} component={Login} />
+      <Route path={"/settings"} component={Settings} />
       <Route path={"/programs"} component={Programs} />
       <Route path={"/programs/new"} component={NewProgram} />
       <Route path={"/programs/:id"} component={ProgramDetail} />
