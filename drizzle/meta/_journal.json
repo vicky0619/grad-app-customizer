@@ -1,61 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1762418172784,
-      "tag": "0000_yummy_ultron",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1762418233288,
-      "tag": "0001_fluffy_pixie",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1762479050046,
-      "tag": "0002_cloudy_vertigo",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1762482570842,
-      "tag": "0003_tired_the_renegades",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1762482617320,
-      "tag": "0004_next_korg",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1762484163491,
-      "tag": "0005_nappy_zuras",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1762485531093,
-      "tag": "0006_useful_venus",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "5",
-      "when": 1762488006329,
-      "tag": "0007_useful_lyja",
+      "version": "7",
+      "when": 1774682212038,
+      "tag": "0000_lush_johnny_blaze",
       "breakpoints": true
     }
   ]
