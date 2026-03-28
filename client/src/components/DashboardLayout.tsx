@@ -19,17 +19,20 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { trpc } from "@/lib/trpc";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { FileText, LayoutDashboard, LogOut, PanelLeft, Settings } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: LayoutDashboard, label: "首頁", path: "/" },
+  { icon: FileText, label: "我的學校", path: "/programs" },
+  { icon: FileText, label: "我的模板", path: "/templates" },
+  { icon: Settings, label: "設定", path: "/settings" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -118,6 +121,12 @@ function DashboardLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
+  const settingsQuery = trpc.auth.getSettings.useQuery(undefined, {
+    enabled: !!user,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const needsApiKey = user && settingsQuery.data && !settingsQuery.data.hasApiKey;
 
   useEffect(() => {
     if (isCollapsed) {
@@ -250,7 +259,7 @@ function DashboardLayoutContent({
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
+                  <span>登出</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -279,6 +288,17 @@ function DashboardLayoutContent({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+        {needsApiKey && location !== "/settings" && (
+          <div className="bg-secondary border-b border-border px-4 py-2 flex items-center justify-between text-sm text-foreground">
+            <span className="label-editorial text-muted-foreground">請先設定 API Key 才能使用 AI 功能</span>
+            <button
+              onClick={() => setLocation("/settings")}
+              className="label-editorial text-primary hover:underline"
+            >
+              前往設定
+            </button>
           </div>
         )}
         <main className="flex-1 p-6">{children}</main>

@@ -81,7 +81,7 @@ export default function Programs() {
             {programs.map((program, idx) => (
               <Link key={program.id} href={`/programs/${program.id}`}>
                 <div
-                  className={`group flex items-center justify-between py-5 border-b border-border hover:bg-accent/40 transition-colors px-1 cursor-pointer ${idx === 0 ? "" : ""}`}
+                  className="group flex items-center justify-between py-5 border-b border-border hover:bg-accent/40 transition-colors px-1 cursor-pointer"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3 mb-1">

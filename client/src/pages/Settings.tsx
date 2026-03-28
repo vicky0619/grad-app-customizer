@@ -69,9 +69,9 @@ export default function Settings() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="label-editorial text-muted-foreground">模型預設</Label>
+            <Label htmlFor="preset" className="label-editorial text-muted-foreground">模型預設</Label>
             <Select value={selectedPreset} onValueChange={handlePresetChange}>
-              <SelectTrigger className="bg-background">
+              <SelectTrigger id="preset" className="bg-background">
                 <SelectValue placeholder="選擇模型" />
               </SelectTrigger>
               <SelectContent>

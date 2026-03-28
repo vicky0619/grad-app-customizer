@@ -57,7 +57,7 @@ export default function Home() {
             ) : (
               <Button
                 size="sm"
-                onClick={() => (window.location.href = getLoginUrl())}
+                onClick={() => (setLocation(getLoginUrl()))}
               >
                 進入帳號
               </Button>
@@ -94,7 +94,7 @@ export default function Home() {
                   onClick={() =>
                     isAuthenticated
                       ? setLocation("/programs")
-                      : (window.location.href = getLoginUrl())
+                      : (setLocation(getLoginUrl()))
                   }
                 >
                   開始使用
@@ -169,7 +169,7 @@ export default function Home() {
                 onClick={() =>
                   isAuthenticated
                     ? setLocation("/programs/new")
-                    : (window.location.href = getLoginUrl())
+                    : (setLocation(getLoginUrl()))
                 }
               >
                 創建第一個項目
