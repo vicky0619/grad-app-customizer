@@ -4,9 +4,21 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MODEL_PRESETS } from "@shared/models";
+import { PROVIDERS } from "@shared/models";
 import { toast } from "sonner";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function findProvider(baseUrl: string) {
+  return PROVIDERS.find((p) => p.id !== "custom" && p.baseUrl === baseUrl);
+}
+
+function findModel(providerId: string, model: string) {
+  const p = PROVIDERS.find((p) => p.id === providerId);
+  return p?.models.find((m) => m.model === model);
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Settings() {
   const { data: settings, isLoading } = trpc.auth.getSettings.useQuery();
@@ -15,35 +27,53 @@ export default function Settings() {
     onError: (e) => toast.error(`儲存失敗：${e.message}`),
   });
 
-  const [selectedPreset, setSelectedPreset] = useState("custom:");
-  const [baseUrl, setBaseUrl] = useState("");
-  const [model, setModel] = useState("");
+  const [selectedProviderId, setSelectedProviderId] = useState("openai");
+  const [selectedModel, setSelectedModel] = useState("gpt-4.1");
+  const [customBaseUrl, setCustomBaseUrl] = useState("");
+  const [customModel, setCustomModel] = useState("");
   const [apiKey, setApiKey] = useState("");
 
+  // Populate from saved settings
   useEffect(() => {
     if (!settings) return;
-    setBaseUrl(settings.llmBaseUrl);
-    setModel(settings.llmModel);
-    const match = MODEL_PRESETS.find(
-      (p) => p.baseUrl === settings.llmBaseUrl && p.model === settings.llmModel
-    );
-    setSelectedPreset(match ? `${match.provider}:${match.model}` : "custom:");
+    const provider = findProvider(settings.llmBaseUrl);
+    if (provider) {
+      setSelectedProviderId(provider.id);
+      const modelExists = findModel(provider.id, settings.llmModel);
+      setSelectedModel(modelExists ? settings.llmModel : provider.models[0]?.model ?? "");
+    } else {
+      setSelectedProviderId("custom");
+      setCustomBaseUrl(settings.llmBaseUrl);
+      setCustomModel(settings.llmModel);
+    }
   }, [settings]);
 
-  function handlePresetChange(value: string) {
-    setSelectedPreset(value);
-    const preset = MODEL_PRESETS.find((p) => `${p.provider}:${p.model}` === value);
-    if (preset && preset.provider !== "custom") {
-      setBaseUrl(preset.baseUrl);
-      setModel(preset.model);
-    }
+  const activeProvider = PROVIDERS.find((p) => p.id === selectedProviderId)!;
+  const isCustom = selectedProviderId === "custom";
+
+  function handleProviderChange(id: string) {
+    setSelectedProviderId(id);
+    const p = PROVIDERS.find((p) => p.id === id)!;
+    if (p.models.length > 0) setSelectedModel(p.models[0].model);
   }
 
   function handleSave() {
+    const baseUrl = isCustom ? customBaseUrl : activeProvider.baseUrl;
+    const model = isCustom ? customModel : selectedModel;
     saveSettings.mutate({ apiKey, llmBaseUrl: baseUrl, llmModel: model });
   }
 
-  if (isLoading) return <DashboardLayout><div className="p-6 text-muted-foreground text-sm">載入中…</div></DashboardLayout>;
+  const canSave =
+    !saveSettings.isPending &&
+    (settings?.hasApiKey || !!apiKey) &&
+    (isCustom ? !!customBaseUrl && !!customModel : !!selectedModel);
+
+  if (isLoading)
+    return (
+      <DashboardLayout>
+        <div className="p-6 text-muted-foreground text-sm">載入中…</div>
+      </DashboardLayout>
+    );
 
   return (
     <DashboardLayout>
@@ -59,65 +89,105 @@ export default function Settings() {
           </h1>
         </div>
 
-        {/* Section */}
-        <div className="border border-border rounded-sm p-6 space-y-5">
+        <div className="border border-border rounded-sm p-6 space-y-6">
           <div className="pb-4 border-b border-border">
             <h2 className="text-base font-medium text-foreground mb-1">AI 模型設定</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              填入你自己的 API Key，系統會用你的 Key 呼叫 AI 模型。Key 加密儲存，不會以明文方式保存。
+              選擇 AI 服務商與模型，並填入對應的 API Key。Key 加密儲存，不會以明文方式保存。
             </p>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="preset" className="label-editorial text-muted-foreground">模型預設</Label>
-            <Select value={selectedPreset} onValueChange={handlePresetChange}>
-              <SelectTrigger id="preset" className="bg-background">
-                <SelectValue placeholder="選擇模型" />
-              </SelectTrigger>
-              <SelectContent>
-                {MODEL_PRESETS.map((p) => (
-                  <SelectItem
-                    key={`${p.provider}:${p.model}`}
-                    value={`${p.provider}:${p.model}`}
+          {/* Step 1 — Provider */}
+          <div className="space-y-2">
+            <Label className="label-editorial text-muted-foreground">服務商</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {PROVIDERS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => handleProviderChange(p.id)}
+                  className={`px-3 py-2.5 text-sm border rounded-sm transition-colors text-left ${
+                    selectedProviderId === p.id
+                      ? "border-primary bg-primary/5 text-primary font-medium"
+                      : "border-border bg-background text-foreground hover:border-foreground/30"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Step 2 — Model (not shown for custom) */}
+          {!isCustom && activeProvider.models.length > 0 && (
+            <div className="space-y-2">
+              <Label className="label-editorial text-muted-foreground">模型</Label>
+              <div className="grid grid-cols-1 gap-1.5">
+                {activeProvider.models.map((m) => (
+                  <button
+                    key={m.model}
+                    type="button"
+                    onClick={() => setSelectedModel(m.model)}
+                    className={`flex items-center justify-between px-3 py-2.5 text-sm border rounded-sm transition-colors ${
+                      selectedModel === m.model
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border bg-background text-foreground hover:border-foreground/30"
+                    }`}
                   >
-                    {p.label}
-                  </SelectItem>
+                    <span className={selectedModel === m.model ? "font-medium" : ""}>
+                      {m.label}
+                    </span>
+                    {m.note && (
+                      <span
+                        className={`label-editorial ml-2 ${
+                          selectedModel === m.model ? "text-primary/70" : "text-muted-foreground"
+                        }`}
+                      >
+                        {m.note}
+                      </span>
+                    )}
+                  </button>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </div>
+            </div>
+          )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="baseUrl" className="label-editorial text-muted-foreground">
-              API Base URL
-            </Label>
-            <Input
-              id="baseUrl"
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
-              placeholder="https://api.openai.com/v1"
-              className="bg-background"
-            />
-          </div>
+          {/* Custom provider fields */}
+          {isCustom && (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="customBaseUrl" className="label-editorial text-muted-foreground">
+                  API Base URL
+                </Label>
+                <Input
+                  id="customBaseUrl"
+                  value={customBaseUrl}
+                  onChange={(e) => setCustomBaseUrl(e.target.value)}
+                  placeholder="https://api.openai.com/v1"
+                  className="bg-background"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="customModel" className="label-editorial text-muted-foreground">
+                  模型名稱
+                </Label>
+                <Input
+                  id="customModel"
+                  value={customModel}
+                  onChange={(e) => setCustomModel(e.target.value)}
+                  placeholder="gpt-4o"
+                  className="bg-background"
+                />
+              </div>
+            </div>
+          )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="model" className="label-editorial text-muted-foreground">
-              模型名稱
-            </Label>
-            <Input
-              id="model"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder="gpt-4o"
-              className="bg-background"
-            />
-          </div>
-
+          {/* API Key */}
           <div className="space-y-1.5">
             <Label htmlFor="apiKey" className="label-editorial text-muted-foreground">
-              API Key{" "}
+              API Key
               {settings?.hasApiKey && (
-                <span className="normal-case font-normal text-muted-foreground">
+                <span className="normal-case font-normal text-muted-foreground ml-1">
                   （已設定，留空代表不更改）
                 </span>
               )}
@@ -127,17 +197,31 @@ export default function Settings() {
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder={settings?.hasApiKey ? "••••••••••••（留空保留現有 Key）" : "sk-..."}
+              placeholder={
+                settings?.hasApiKey
+                  ? "••••••••••••（留空保留現有 Key）"
+                  : activeProvider.apiKeyPlaceholder
+              }
               autoComplete="off"
-              className="bg-background"
+              className="bg-background font-mono text-sm"
             />
           </div>
 
-          <Button
-            onClick={handleSave}
-            disabled={saveSettings.isPending || (!settings?.hasApiKey && !apiKey)}
-            className="w-full"
-          >
+          {/* Current config summary */}
+          {!isCustom && selectedModel && (
+            <div className="rounded-sm bg-muted/60 px-3 py-2.5 text-xs text-muted-foreground space-y-0.5">
+              <div>
+                <span className="label-editorial mr-2">Provider</span>
+                {activeProvider.baseUrl}
+              </div>
+              <div>
+                <span className="label-editorial mr-2">Model</span>
+                {selectedModel}
+              </div>
+            </div>
+          )}
+
+          <Button onClick={handleSave} disabled={!canSave} className="w-full">
             {saveSettings.isPending ? "儲存中…" : "儲存設定"}
           </Button>
         </div>
