@@ -1,12 +1,12 @@
 {
-  "buildCommand": "vite build",
+  "buildCommand": "vite build && ./node_modules/.bin/esbuild api/_entry.ts --platform=node --bundle --format=cjs --outfile=api/index.js",
   "outputDirectory": "dist/public",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/index.ts": {
+    "api/index.js": {
       "maxDuration": 60
     }
   }
