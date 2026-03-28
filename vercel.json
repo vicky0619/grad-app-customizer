@@ -1,5 +1,5 @@
 {
-  "buildCommand": "vite build && ./node_modules/.bin/esbuild api/_entry.ts --platform=node --bundle --format=cjs --outfile=api/index.js",
+  "buildCommand": "vite build && ./node_modules/.bin/esbuild api/_entry.ts --platform=node --bundle --format=esm --outfile=api/index.js",
   "outputDirectory": "dist/public",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" },
