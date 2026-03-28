@@ -311,7 +311,18 @@ export async function invokeLLM(params: InvokeParams, config?: LLMConfig): Promi
   });
 
   if (normalizedResponseFormat) {
-    payload.response_format = normalizedResponseFormat;
+    // json_schema is only supported by OpenAI and Google; fall back to json_object for others
+    const supportsJsonSchema =
+      apiUrl.includes("api.openai.com") ||
+      apiUrl.includes("generativelanguage.googleapis.com");
+    if (
+      normalizedResponseFormat.type === "json_schema" &&
+      !supportsJsonSchema
+    ) {
+      payload.response_format = { type: "json_object" };
+    } else {
+      payload.response_format = normalizedResponseFormat;
+    }
   }
 
   const response = await fetch(apiUrl, {
