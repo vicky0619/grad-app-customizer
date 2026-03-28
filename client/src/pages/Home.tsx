@@ -181,13 +181,41 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-border">
-        <div className="container py-6 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} {APP_TITLE}
-          </span>
-          <span className="label-editorial text-muted-foreground">
-            Powered by AI
-          </span>
+        <div className="container py-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-foreground" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                Vicky Tsai
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                © {new Date().getFullYear()} {APP_TITLE}
+              </p>
+            </div>
+            <div className="flex items-center gap-5">
+              <a
+                href="https://www.linkedin.com/in/wen-chi-tsai/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="label-editorial text-muted-foreground hover:text-foreground transition-colors"
+              >
+                LinkedIn
+              </a>
+              <a
+                href="https://www.instagram.com/wenchi_tsai/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="label-editorial text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Instagram
+              </a>
+              <a
+                href="mailto:vicky46586038@gmail.com"
+                className="label-editorial text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Email
+              </a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

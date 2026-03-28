@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Warm terracotta background -->
+  <rect width="48" height="48" rx="10" fill="#C85627"/>
+  <!-- Stylised document stack — two pages offset -->
+  <rect x="16" y="10" width="20" height="26" rx="2" fill="white" opacity="0.25"/>
+  <rect x="12" y="13" width="20" height="26" rx="2" fill="white"/>
+  <!-- Three text lines -->
+  <rect x="16" y="19" width="12" height="2" rx="1" fill="#C85627"/>
+  <rect x="16" y="24" width="10" height="2" rx="1" fill="#C85627"/>
+  <rect x="16" y="29" width="8"  height="2" rx="1" fill="#C85627"/>
+  <!-- Pen nib accent (bottom-right) -->
+  <path d="M30 33 L34 29 L36 31 L32 35 Z" fill="#C85627" opacity="0.9"/>
+  <path d="M34 29 L36 27 L37 30 L35 31 Z" fill="white" opacity="0.8"/>
+</svg>
