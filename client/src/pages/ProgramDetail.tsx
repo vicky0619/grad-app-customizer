@@ -43,8 +43,8 @@ export default function ProgramDetail() {
       toast.success("項目研究完成!");
       refetchResearch();
     },
-    onError: () => {
-      toast.error("研究失敗,請重試");
+    onError: (e) => {
+      toast.error(`研究失敗：${e.message}`);
     },
   });
 
