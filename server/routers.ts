@@ -351,7 +351,26 @@ ${program.country ? `國家: ${program.country}` : ''}
         if (typeof content !== 'string') {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Invalid LLM response" });
         }
-        const researchData = JSON.parse(content);
+        const raw = JSON.parse(content);
+        // Normalize: LLMs using json_object mode may return nested objects instead of strings
+        const stringify = (v: unknown): string =>
+          typeof v === "string" ? v : JSON.stringify(v, null, 2);
+        const researchData = {
+          courses: stringify(raw.courses),
+          facultyMembers: stringify(raw.facultyMembers),
+          requirements: stringify(raw.requirements),
+          uniqueCharacteristics: stringify(raw.uniqueCharacteristics),
+          researchAreas: stringify(raw.researchAreas),
+          graduationRequirements: stringify(raw.graduationRequirements),
+          careerResources: stringify(raw.careerResources),
+          programOrientation: raw.programOrientation ?? "mixed",
+          technicalFocus: stringify(raw.technicalFocus),
+          requiredCourses: stringify(raw.requiredCourses),
+          electiveCourses: stringify(raw.electiveCourses),
+          trackOptions: stringify(raw.trackOptions),
+          recommendedCourses: raw.recommendedCourses ? stringify(raw.recommendedCourses) : undefined,
+          admissionRequirements: raw.admissionRequirements ? stringify(raw.admissionRequirements) : undefined,
+        };
         
         // Check if research already exists
         const existingResearch = await db.getProgramResearch(input.programId);
