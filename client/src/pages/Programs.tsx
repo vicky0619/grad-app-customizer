@@ -1,10 +1,23 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Plus, Loader2, GraduationCap } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { Link } from "wouter";
+import DashboardLayout from "@/components/DashboardLayout";
+
+const statusLabels: Record<string, string> = {
+  draft: "草稿",
+  researching: "研究中",
+  generating: "生成中",
+  completed: "已完成",
+};
+
+const statusColors: Record<string, string> = {
+  draft: "text-muted-foreground",
+  researching: "text-blue-600",
+  generating: "text-amber-600",
+  completed: "text-primary",
+};
 
 export default function Programs() {
   const { user, loading: authLoading } = useAuth();
@@ -14,84 +27,106 @@ export default function Programs() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      </DashboardLayout>
     );
   }
 
-  const statusColors = {
-    draft: "bg-gray-500",
-    researching: "bg-blue-500",
-    generating: "bg-yellow-500",
-    completed: "bg-green-500",
-  };
-
-  const statusLabels = {
-    draft: "草稿",
-    researching: "研究中",
-    generating: "生成中",
-    completed: "已完成",
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container py-8">
-        <div className="flex items-center justify-between mb-8">
+    <DashboardLayout>
+      <div className="max-w-3xl mx-auto">
+        {/* Page header */}
+        <div className="flex items-end justify-between py-8 border-b border-border mb-0">
           <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">我的申請項目</h1>
-            <p className="text-muted-foreground">管理您的碩士項目申請材料</p>
+            <p className="label-editorial text-muted-foreground mb-2">申請管理</p>
+            <h1
+              className="text-3xl font-medium text-foreground"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              我的申請項目
+            </h1>
           </div>
           <Link href="/programs/new">
-            <Button size="lg" className="gap-2">
-              <Plus className="h-5 w-5" />
+            <Button size="sm" className="gap-1.5 mb-1">
+              <Plus className="h-3.5 w-3.5" />
               新建項目
             </Button>
           </Link>
         </div>
 
+        {/* Program list */}
         {!programs || programs.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <GraduationCap className="h-16 w-16 text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">還沒有項目</h3>
-              <p className="text-muted-foreground mb-6">創建您的第一個申請項目開始使用</p>
-              <Link href="/programs/new">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  新建項目
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <div className="py-20 text-center">
+            <p
+              className="text-2xl font-medium text-foreground mb-3"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              尚無申請項目
+            </p>
+            <p className="text-muted-foreground mb-8 text-sm">
+              建立第一個項目，開始準備您的碩士申請材料
+            </p>
+            <Link href="/programs/new">
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                新建項目
+              </Button>
+            </Link>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {programs.map((program) => (
+          <div>
+            {programs.map((program, idx) => (
               <Link key={program.id} href={`/programs/${program.id}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                  <CardHeader>
-                    <div className="flex items-start justify-between mb-2">
-                      <Badge className={statusColors[program.status]}>
+                <div
+                  className={`group flex items-center justify-between py-5 border-b border-border hover:bg-accent/40 transition-colors px-1 cursor-pointer ${idx === 0 ? "" : ""}`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span
+                        className={`label-editorial ${statusColors[program.status]}`}
+                      >
                         {statusLabels[program.status]}
-                      </Badge>
+                      </span>
+                      {program.country && (
+                        <>
+                          <span className="text-border">·</span>
+                          <span className="label-editorial text-muted-foreground">
+                            {program.country}
+                          </span>
+                        </>
+                      )}
                     </div>
-                    <CardTitle className="text-xl">{program.programName}</CardTitle>
-                    <CardDescription className="text-base">
-                      {program.universityName}
-                      {program.country && ` · ${program.country}`}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      創建於 {new Date(program.createdAt).toLocaleDateString('zh-TW')}
+                    <p
+                      className="text-base font-medium text-foreground truncate group-hover:text-primary transition-colors"
+                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                    >
+                      {program.programName}
                     </p>
-                  </CardContent>
-                </Card>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {program.universityName}
+                    </p>
+                  </div>
+                  <div className="shrink-0 ml-6 text-right">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(program.createdAt).toLocaleDateString("zh-TW", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                    <span className="text-muted-foreground group-hover:text-primary transition-colors text-sm mt-1 block">
+                      →
+                    </span>
+                  </div>
+                </div>
               </Link>
             ))}
           </div>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

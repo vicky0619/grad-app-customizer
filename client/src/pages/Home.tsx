@@ -1,114 +1,195 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { FileText, Sparkles, Library } from "lucide-react";
+import { APP_TITLE, getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
-import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 
 export default function Home() {
   const [, setLocation] = useLocation();
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src={APP_LOGO} alt="Logo" className="h-8 w-8" />
-            <span className="font-bold text-xl">{APP_TITLE}</span>
-          </div>
-          <div className="flex items-center gap-4">
+      <header className="border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container flex h-14 items-center justify-between">
+          <span
+            className="font-semibold tracking-tight text-foreground cursor-pointer"
+            style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
+            onClick={() => setLocation("/")}
+          >
+            {APP_TITLE}
+          </span>
+          <nav className="flex items-center gap-1">
             {isAuthenticated ? (
               <>
-                <Button variant="ghost" onClick={() => setLocation("/templates")}>
-                  <Library className="mr-2 h-4 w-4" />
-                  範本管理
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-sm font-normal"
+                  onClick={() => setLocation("/templates")}
+                >
+                  範本
                 </Button>
-                <Button variant="ghost" onClick={() => setLocation("/programs")}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  我的項目
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-sm font-normal"
+                  onClick={() => setLocation("/programs")}
+                >
+                  項目
                 </Button>
-                <Button variant="outline" onClick={logout}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-sm font-normal text-muted-foreground"
+                  onClick={logout}
+                >
                   登出
+                </Button>
+                <Button
+                  size="sm"
+                  className="ml-2 text-sm"
+                  onClick={() => setLocation("/programs")}
+                >
+                  開啟主頁
                 </Button>
               </>
             ) : (
-              <Button onClick={() => window.location.href = getLoginUrl()}>
+              <Button
+                size="sm"
+                onClick={() => (window.location.href = getLoginUrl())}
+              >
                 進入帳號
               </Button>
             )}
-          </div>
+          </nav>
         </div>
       </header>
 
-      {/* Hero Section */}
       <main className="flex-1">
-        <div className="container py-20">
-          <div className="text-center max-w-3xl mx-auto space-y-8">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              智能客製化您的 碩士申請材料
-            </h1>
-            <p className="text-xl text-gray-600">
-              基於您之前的申請文件,使用AI搜索最新項目信息,為每個目標項目生成量身定製的CV、SoP和LoR
+        {/* Hero */}
+        <section className="border-b border-border">
+          <div className="container py-24 md:py-32">
+            <div className="max-w-2xl">
+              <p className="label-editorial text-muted-foreground mb-6">
+                AI 申請文件助手
+              </p>
+              <h1
+                className="text-5xl md:text-6xl font-medium leading-tight text-foreground mb-8"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                量身定製的
+                <br />
+                <em className="not-italic text-primary">碩士申請</em>
+                <br />
+                文件
+              </h1>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-10 max-w-lg" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+                基於您的原始申請材料，AI 自動研究目標項目特色，為每所學校生成專屬的 CV、SoP 和 LoR。
+              </p>
+              <div className="flex items-center gap-4">
+                <Button
+                  size="lg"
+                  className="px-8"
+                  onClick={() =>
+                    isAuthenticated
+                      ? setLocation("/programs")
+                      : (window.location.href = getLoginUrl())
+                  }
+                >
+                  開始使用
+                </Button>
+                <span className="text-sm text-muted-foreground">免費，無需信用卡</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section className="border-b border-border">
+          <div className="container py-16">
+            <p className="label-editorial text-muted-foreground mb-12">
+              工作流程
             </p>
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-6"
-              onClick={() => isAuthenticated ? setLocation("/programs") : window.location.href = getLoginUrl()}
-            >
-              開始使用 →
-            </Button>
-          </div>
-
-          {/* Features */}
-          <div className="grid md:grid-cols-3 gap-8 mt-20">
-            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <Library className="h-6 w-6 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">上傳原始材料</h3>
-              <p className="text-gray-600">
-                上傳您之前申請其他校系使用的CV、SoP和LoR,作為客製化的基礎
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="bg-indigo-100 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <Sparkles className="h-6 w-6 text-indigo-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">AI智能研究</h3>
-              <p className="text-gray-600">
-                使用LLM搜索目標項目的最新課程、教職員、要求和特色,確保信息準確
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <FileText className="h-6 w-6 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">生成客製化文檔</h3>
-              <p className="text-gray-600">
-                根據項目特色自動調整您的申請材料,突出相關經驗和技能,提升申請成功率
-              </p>
+            <div className="grid md:grid-cols-3 gap-0">
+              {[
+                {
+                  step: "01",
+                  title: "上傳原始材料",
+                  desc: "上傳您以往申請使用的 CV、SoP 和 LoR，作為客製化的基礎範本。",
+                },
+                {
+                  step: "02",
+                  title: "AI 智能研究",
+                  desc: "系統自動搜尋目標項目的課程、師資、入學要求與特色，確保資料最新。",
+                },
+                {
+                  step: "03",
+                  title: "生成客製文件",
+                  desc: "根據項目特色調整申請材料，突出相關經歷，並提供完整修改記錄。",
+                },
+              ].map((item, i) => (
+                <div
+                  key={item.step}
+                  className={`py-8 ${i > 0 ? "md:border-l border-border md:pl-8" : ""} ${i < 2 ? "md:pr-8" : ""}`}
+                >
+                  <span className="label-editorial text-primary mb-4 block">
+                    {item.step}
+                  </span>
+                  <h3
+                    className="text-xl font-medium text-foreground mb-3"
+                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed text-sm">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
+        </section>
 
-          {/* CTA */}
-          <div className="mt-20 text-center bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-12">
-            <h2 className="text-3xl font-bold mb-4">準備好開始了嗎?</h2>
-            <p className="text-gray-600 mb-6">
-              立即創建您的第一個項目,讓AI幫您完成客製化的申請材料!
-            </p>
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-              onClick={() => isAuthenticated ? setLocation("/programs/new") : window.location.href = getLoginUrl()}
-            >
-              創建項目 →
-            </Button>
+        {/* CTA */}
+        <section>
+          <div className="container py-20">
+            <div className="max-w-xl">
+              <h2
+                className="text-3xl font-medium text-foreground mb-4"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                準備好開始了嗎？
+              </h2>
+              <p className="text-muted-foreground mb-8 leading-relaxed">
+                立即創建您的第一個申請項目，讓 AI 協助您完成專屬的申請材料。
+              </p>
+              <Button
+                size="lg"
+                onClick={() =>
+                  isAuthenticated
+                    ? setLocation("/programs/new")
+                    : (window.location.href = getLoginUrl())
+                }
+              >
+                創建第一個項目
+              </Button>
+            </div>
           </div>
-        </div>
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border">
+        <div className="container py-6 flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} {APP_TITLE}
+          </span>
+          <span className="label-editorial text-muted-foreground">
+            Powered by AI
+          </span>
+        </div>
+      </footer>
     </div>
   );
 }

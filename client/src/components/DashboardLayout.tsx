@@ -1,5 +1,4 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -22,17 +21,15 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { FileText, LayoutDashboard, LogOut, PanelLeft, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "首頁", path: "/" },
-  { icon: FileText, label: "我的學校", path: "/programs" },
-  { icon: FileText, label: "我的模板", path: "/templates" },
-  { icon: Settings, label: "設定", path: "/settings" },
+  { icon: LayoutDashboard, label: "Page 1", path: "/" },
+  { icon: Users, label: "Page 2", path: "/some-path" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -45,7 +42,6 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [, navigate] = useLocation();
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
@@ -62,29 +58,26 @@ export default function DashboardLayout({
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex flex-col items-center gap-6">
-            <div className="relative group">
-              <div className="relative">
-                <img
-                  src={APP_LOGO}
-                  alt={APP_TITLE}
-                  className="h-20 w-20 rounded-xl object-cover shadow"
-                />
-              </div>
-            </div>
-            <div className="text-center space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight">{APP_TITLE}</h1>
-              <p className="text-sm text-muted-foreground">
-                Please sign in to continue
-              </p>
-            </div>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex flex-col items-center gap-10 p-8 max-w-sm w-full text-center">
+          <div className="space-y-3">
+            <h1
+              className="text-2xl font-medium text-foreground"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              {APP_TITLE}
+            </h1>
+            <div className="w-8 h-px bg-primary mx-auto" />
+            <p className="text-sm text-muted-foreground mt-4">
+              請登入以繼續
+            </p>
           </div>
           <Button
-            onClick={() => navigate(getLoginUrl())}
+            onClick={() => {
+              window.location.href = getLoginUrl();
+            }}
             size="lg"
-            className="w-full shadow-lg hover:shadow-xl transition-all"
+            className="w-full max-w-xs"
           >
             登入
           </Button>
@@ -125,12 +118,6 @@ function DashboardLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
-  const settingsQuery = trpc.auth.getSettings.useQuery(undefined, {
-    enabled: !!user,
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
-  const needsApiKey = user && settingsQuery.data && !settingsQuery.data.hasApiKey;
 
   useEffect(() => {
     if (isCollapsed) {
@@ -200,7 +187,7 @@ function DashboardLayoutContent({
                       className="h-8 w-8 rounded-md object-cover ring-1 ring-border shrink-0"
                       alt="Logo"
                     />
-                    <span className="font-semibold tracking-tight truncate">
+                    <span className="text-sm font-semibold tracking-tight truncate" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                       {APP_TITLE}
                     </span>
                   </div>
@@ -225,7 +212,7 @@ function DashboardLayoutContent({
                       isActive={isActive}
                       onClick={() => setLocation(item.path)}
                       tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
+                      className={`h-9 transition-all font-normal text-sm ${isActive ? "font-medium" : ""}`}
                     >
                       <item.icon
                         className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
@@ -294,18 +281,7 @@ function DashboardLayoutContent({
             </div>
           </div>
         )}
-        {needsApiKey && location !== "/settings" && (
-          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between text-sm text-amber-800">
-            <span>請先設定 API Key 才能使用 AI 功能</span>
-            <button
-              onClick={() => setLocation("/settings")}
-              className="font-medium underline hover:no-underline"
-            >
-              前往設定
-            </button>
-          </div>
-        )}
-        <main className="flex-1 p-4">{children}</main>
+        <main className="flex-1 p-6">{children}</main>
       </SidebarInset>
     </>
   );
