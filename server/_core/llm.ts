@@ -320,6 +320,14 @@ export async function invokeLLM(params: InvokeParams, config?: LLMConfig): Promi
       !supportsJsonSchema
     ) {
       payload.response_format = { type: "json_object" };
+      // json_object mode requires the word "json" to appear in messages
+      const msgs = payload.messages as Array<{ role: string; content: string }>;
+      const hasJson = msgs.some((m) =>
+        typeof m.content === "string" && m.content.toLowerCase().includes("json")
+      );
+      if (!hasJson && msgs.length > 0) {
+        msgs[0].content = msgs[0].content + "\n\nRespond with valid JSON.";
+      }
     } else {
       payload.response_format = normalizedResponseFormat;
     }
