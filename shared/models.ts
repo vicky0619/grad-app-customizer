@@ -20,12 +20,12 @@ export const PROVIDERS: ProviderConfig[] = [
     baseUrl: "https://api.anthropic.com/v1",
     apiKeyPlaceholder: "sk-ant-api03-...",
     models: [
-      { model: "claude-opus-4-5", label: "Claude Opus 4.5" },
+      { model: "claude-opus-4-6", label: "Claude Opus 4.6" },
       { model: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", note: "推薦" },
       { model: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5", note: "最快" },
       { model: "claude-3-7-sonnet-latest", label: "Claude 3.7 Sonnet" },
       { model: "claude-3-5-sonnet-latest", label: "Claude 3.5 Sonnet" },
-      { model: "claude-3-5-haiku-latest", label: "Claude 3.5 Haiku", note: "最快" },
+      { model: "claude-3-5-haiku-latest", label: "Claude 3.5 Haiku" },
     ],
   },
   {
@@ -36,10 +36,10 @@ export const PROVIDERS: ProviderConfig[] = [
     models: [
       { model: "gpt-4.1", label: "GPT-4.1", note: "推薦" },
       { model: "gpt-4.1-mini", label: "GPT-4.1 Mini", note: "最快" },
-      { model: "gpt-4o", label: "GPT-4o" },
-      { model: "gpt-4o-mini", label: "GPT-4o Mini" },
+      { model: "gpt-4.1-nano", label: "GPT-4.1 Nano" },
       { model: "o3", label: "o3" },
       { model: "o4-mini", label: "o4-mini" },
+      { model: "gpt-4o", label: "GPT-4o" },
     ],
   },
   {
@@ -48,10 +48,10 @@ export const PROVIDERS: ProviderConfig[] = [
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
     apiKeyPlaceholder: "AIza...",
     models: [
-      { model: "gemini-2.5-flash", label: "Gemini 2.5 Flash", note: "推薦" },
-      { model: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
-      { model: "gemini-2.0-flash-001", label: "Gemini 2.0 Flash" },
-      { model: "gemini-1.5-flash-latest", label: "Gemini 1.5 Flash", note: "最快" },
+      { model: "gemini-2.5-flash-preview-04-17", label: "Gemini 2.5 Flash", note: "推薦" },
+      { model: "gemini-2.5-pro-preview-03-25", label: "Gemini 2.5 Pro" },
+      { model: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
+      { model: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash Lite", note: "最快" },
     ],
   },
   {
@@ -60,10 +60,10 @@ export const PROVIDERS: ProviderConfig[] = [
     baseUrl: "https://api.groq.com/openai/v1",
     apiKeyPlaceholder: "gsk_...",
     models: [
-      { model: "llama-3.3-70b-versatile", label: "Llama 3.3 70B", note: "免費" },
-      { model: "llama-4-scout-17b-16e-instruct", label: "Llama 4 Scout", note: "免費" },
-      { model: "deepseek-r1-distill-llama-70b", label: "DeepSeek R1 Distill 70B", note: "免費" },
-      { model: "gemma2-9b-it", label: "Gemma 2 9B", note: "免費" },
+      { model: "llama-3.3-70b-versatile", label: "Llama 3.3 70B", note: "推薦" },
+      { model: "llama-4-scout-17b-16e-instruct", label: "Llama 4 Scout 17B" },
+      { model: "llama-3.1-8b-instant", label: "Llama 3.1 8B", note: "最快" },
+      { model: "deepseek-r1-distill-llama-70b", label: "DeepSeek R1 Distill 70B" },
     ],
   },
   {
@@ -72,8 +72,8 @@ export const PROVIDERS: ProviderConfig[] = [
     baseUrl: "https://openrouter.ai/api/v1",
     apiKeyPlaceholder: "sk-or-v1-...",
     models: [
-      { model: "anthropic/claude-sonnet-4-5", label: "Claude Sonnet 4.5", note: "推薦" },
-      { model: "anthropic/claude-opus-4-5", label: "Claude Opus 4.5" },
+      { model: "anthropic/claude-sonnet-4-6", label: "Claude Sonnet 4.6", note: "推薦" },
+      { model: "anthropic/claude-opus-4-6", label: "Claude Opus 4.6" },
       { model: "openai/gpt-4.1", label: "GPT-4.1" },
       { model: "openai/o3", label: "o3" },
       { model: "google/gemini-2.5-flash-preview", label: "Gemini 2.5 Flash" },
