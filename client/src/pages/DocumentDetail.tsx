@@ -6,6 +6,7 @@ import { ArrowLeft, Download, Loader2 } from "lucide-react";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { DocumentDiscussion } from "@/components/DocumentDiscussion";
 import { toast } from "sonner";
+import { safeJsonParse } from "@/lib/json";
 
 export default function DocumentDetail() {
   const [, params] = useRoute("/documents/:id");
@@ -51,7 +52,12 @@ export default function DocumentDetail() {
     );
   }
 
-  const changes = document.changesLog ? JSON.parse(document.changesLog) : [];
+  const changes = safeJsonParse<Array<{
+    type: string;
+    original: string;
+    modified: string;
+    reason: string;
+  }>>(document.changesLog, []);
   const originalTemplate = template?.content || "";
 
   const handleRegenerateRequest = (feedback: string) => {

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Loader2, Search, FileText, Download, Sparkles } from "lucide-react";
 import { Streamdown } from "streamdown";
 import { AdmissionRequirementsDialog } from "@/components/AdmissionRequirementsDialog";
+import { safeJsonParse } from "@/lib/json";
 
 // Inline error boundary for individual research fields
 class FieldBoundary extends Component<{ children: ReactNode }, { err: boolean }> {
@@ -526,7 +527,12 @@ export default function ProgramDetail() {
                             <div className="mt-4">
                               <h4 className="font-semibold mb-2">更動摘要</h4>
                               <div className="space-y-2">
-                                {JSON.parse(generatedDoc.changesLog).slice(0, 3).map((change: any, idx: number) => (
+                                {safeJsonParse<Array<{
+                                  type: string;
+                                  original: string;
+                                  modified: string;
+                                  reason: string;
+                                }>>(generatedDoc.changesLog, []).slice(0, 3).map((change, idx: number) => (
                                   <div key={idx} className="text-sm border-l-2 border-blue-500 pl-3 py-1">
                                     <span className="font-medium">{change.type}:</span> {change.reason}
                                   </div>

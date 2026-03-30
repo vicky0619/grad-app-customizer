@@ -12,6 +12,7 @@ import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { encrypt, decrypt } from "./_core/crypto";
 import type { LLMConfig } from "./_core/llm";
+import { parseJsonResponse } from "./_core/json";
 
 function getUserLLMConfig(user: { llmApiKey?: string | null; llmBaseUrl?: string | null; llmModel?: string | null }): LLMConfig {
   return {
@@ -20,6 +21,101 @@ function getUserLLMConfig(user: { llmApiKey?: string | null; llmBaseUrl?: string
     model: user.llmModel ?? undefined,
   };
 }
+
+const documentChangeSchema = z.object({
+  type: z.string(),
+  original: z.string(),
+  modified: z.string(),
+  reason: z.string(),
+});
+
+const standardDocumentResponseFormat = {
+  type: "json_schema" as const,
+  json_schema: {
+    name: "generated_document",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        content: { type: "string" },
+        changes: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              type: { type: "string" },
+              original: { type: "string" },
+              modified: { type: "string" },
+              reason: { type: "string" },
+            },
+            required: ["type", "original", "modified", "reason"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["content", "changes"],
+      additionalProperties: false,
+    },
+  },
+};
+
+const multiQuestionDocumentResponseFormat = {
+  type: "json_schema" as const,
+  json_schema: {
+    name: "generated_multi_question_document",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        answers: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              question: { type: "string" },
+              answer: { type: "string" },
+              wordCount: { type: "number" },
+            },
+            required: ["question", "answer", "wordCount"],
+            additionalProperties: false,
+          },
+        },
+        changes: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              type: { type: "string" },
+              original: { type: "string" },
+              modified: { type: "string" },
+              reason: { type: "string" },
+            },
+            required: ["type", "original", "modified", "reason"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["answers", "changes"],
+      additionalProperties: false,
+    },
+  },
+};
+
+const standardDocumentResponseSchema = z.object({
+  content: z.string(),
+  changes: z.array(documentChangeSchema),
+});
+
+const multiQuestionDocumentResponseSchema = z.object({
+  answers: z.array(
+    z.object({
+      question: z.string(),
+      answer: z.string(),
+      wordCount: z.number(),
+    })
+  ),
+  changes: z.array(documentChangeSchema),
+});
 
 export const appRouter = router({
   system: systemRouter,
@@ -351,7 +447,7 @@ ${program.country ? `國家: ${program.country}` : ''}
         if (typeof content !== 'string') {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Invalid LLM response" });
         }
-        const raw = JSON.parse(content);
+        const raw = parseJsonResponse<Record<string, unknown>>(content, "Program research response");
         // Normalize: LLMs using json_object mode may return nested objects/undefined instead of strings
         const stringify = (v: unknown): string => {
           if (v === undefined || v === null) return "";
@@ -501,12 +597,21 @@ ${templatesInfo}
           if (typeof selectionContent !== 'string') {
             throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
           }
-          const selection = JSON.parse(selectionContent);
+          const selection = parseJsonResponse<{
+            selected_index: number;
+            should_blend: boolean;
+            blend_elements: string[];
+            reasoning: string;
+          }>(selectionContent, "Template selection response");
           selectedTemplate = templates[selection.selected_index - 1];
           selectionReasoning = selection.reasoning;
           
           // Check if we have specific admission requirements
-          const admissionReq = input.admissionRequirements || (research.admissionRequirements ? JSON.parse(research.admissionRequirements) : null);
+          const admissionReq = input.admissionRequirements || (
+            research.admissionRequirements
+              ? parseJsonResponse<Record<string, unknown>>(research.admissionRequirements, "Admission requirements")
+              : null
+          );
           const isMultiQuestion = admissionReq?.documentType === "essay_questions" && admissionReq?.questions?.length > 0;
           const wordLimit = admissionReq?.wordLimit || 1000;
           
@@ -659,6 +764,9 @@ ${input.userInstructions}
                 content: generatePrompt
               }
             ],
+            response_format: isMultiQuestion
+              ? multiQuestionDocumentResponseFormat
+              : standardDocumentResponseFormat,
           }, getUserLLMConfig(ctx.user));
 
           const responseContent = generateResponse.choices[0].message.content;
@@ -673,13 +781,16 @@ ${input.userInstructions}
             .replace(/\s*```$/, '')
             .trim();
           
-          const responseData = JSON.parse(cleanedContent);
+          const parsedResponse = parseJsonResponse<unknown>(cleanedContent, "Generated SOP response");
+          const responseData = isMultiQuestion
+            ? multiQuestionDocumentResponseSchema.parse(parsedResponse)
+            : standardDocumentResponseSchema.parse(parsedResponse);
           
           // Handle different response formats
           let generatedContent: string;
-          if (isMultiQuestion && responseData.answers) {
+          if (isMultiQuestion && "answers" in responseData) {
             // Multi-question format: combine all answers
-            generatedContent = responseData.answers.map((a: any, i: number) => 
+            generatedContent = responseData.answers.map((a, i) => 
               `Question ${i + 1}: ${a.question}\n\n${a.answer}\n\n(Word count: ${a.wordCount})`
             ).join('\n\n---\n\n');
           } else {
@@ -803,6 +914,7 @@ ${input.documentType === 'cv' ? '注意: content欄位應使用標準LaTeX格式
                 content: generatePrompt
               }
             ],
+            response_format: standardDocumentResponseFormat,
           }, getUserLLMConfig(ctx.user));
 
           const responseContent = generateResponse.choices[0].message.content;
@@ -817,7 +929,9 @@ ${input.documentType === 'cv' ? '注意: content欄位應使用標準LaTeX格式
             .replace(/\s*```$/, '')
             .trim();
           
-          const responseData = JSON.parse(cleanedContent);
+          const responseData = standardDocumentResponseSchema.parse(
+            parseJsonResponse<unknown>(cleanedContent, `Generated ${input.documentType.toUpperCase()} response`)
+          );
           const generatedContent = responseData.content;
           const changesLog = JSON.stringify(responseData.changes, null, 2);
           
