@@ -150,6 +150,13 @@ export async function getDocumentByType(programId: number, documentType: string)
   return result[0];
 }
 
+export async function getDocumentByFileKey(fileKey: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(documents).where(eq(documents.fileKey, fileKey)).limit(1);
+  return result[0];
+}
+
 // Program research queries
 export async function createProgramResearch(research: InsertProgramResearch) {
   const db = await getDb();
