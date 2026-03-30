@@ -306,7 +306,7 @@ ${program.country ? `國家: ${program.country}` : ''}
           messages: [
             {
               role: "system",
-              content: "You are a research assistant specializing in graduate programs. Provide detailed, accurate information about master's programs based on the latest available data."
+              content: "You are a research assistant specializing in graduate programs. Provide detailed, accurate information about master's programs based on the latest available data. IMPORTANT: For every field in your response, write the value as plain text or markdown — do NOT use nested JSON objects or arrays as field values. Each field must be a plain string."
             },
             {
               role: "user",
@@ -352,9 +352,12 @@ ${program.country ? `國家: ${program.country}` : ''}
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Invalid LLM response" });
         }
         const raw = JSON.parse(content);
-        // Normalize: LLMs using json_object mode may return nested objects instead of strings
-        const stringify = (v: unknown): string =>
-          typeof v === "string" ? v : JSON.stringify(v, null, 2);
+        // Normalize: LLMs using json_object mode may return nested objects/undefined instead of strings
+        const stringify = (v: unknown): string => {
+          if (v === undefined || v === null) return "";
+          if (typeof v === "string") return v;
+          return JSON.stringify(v, null, 2);
+        };
         const researchData = {
           courses: stringify(raw.courses),
           facultyMembers: stringify(raw.facultyMembers),
