@@ -320,13 +320,42 @@ export async function invokeLLM(params: InvokeParams, config?: LLMConfig): Promi
       !supportsJsonSchema
     ) {
       payload.response_format = { type: "json_object" };
+      const msgs = payload.messages as Array<{
+        role: string;
+        content: string | Array<TextContent | ImageContent | FileContent>;
+      }>;
+
+      const schemaDetails = normalizedResponseFormat.json_schema;
+      if (schemaDetails?.schema) {
+        const schemaJson = JSON.stringify(schemaDetails.schema, null, 2);
+        const strictNote = schemaDetails.strict
+          ? " (no additional properties)"
+          : "";
+        const schemaInstruction = [
+          `You must respond with a JSON object matching the schema "${schemaDetails.name}"${strictNote}.`,
+          "Only include the properties defined below and do not wrap the JSON in markdown code fences or commentary.",
+          "Schema:",
+          schemaJson,
+        ].join("\n");
+        msgs.unshift({ role: "system", content: schemaInstruction });
+      }
+
       // json_object mode requires the word "json" to appear in messages
-      const msgs = payload.messages as Array<{ role: string; content: string }>;
       const hasJson = msgs.some((m) =>
         typeof m.content === "string" && m.content.toLowerCase().includes("json")
       );
       if (!hasJson && msgs.length > 0) {
-        msgs[0].content = msgs[0].content + "\n\nRespond with valid JSON.";
+        const first = msgs[0];
+        if (typeof first.content === "string") {
+          first.content = `${first.content}\n\nRespond with valid JSON.`;
+        } else if (Array.isArray(first.content)) {
+          first.content = [
+            ...first.content,
+            { type: "text", text: "Respond with valid JSON." },
+          ];
+        } else {
+          first.content = "Respond with valid JSON.";
+        }
       }
     } else {
       payload.response_format = normalizedResponseFormat;
