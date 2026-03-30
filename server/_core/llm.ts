@@ -301,7 +301,7 @@ export async function invokeLLM(params: InvokeParams, config?: LLMConfig): Promi
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 8192;
+  payload.max_tokens = 16384;
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
