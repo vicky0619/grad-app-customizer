@@ -12,6 +12,40 @@ import { ArrowLeft, Loader2, Search, FileText, Download, Sparkles } from "lucide
 import { Streamdown } from "streamdown";
 import { AdmissionRequirementsDialog } from "@/components/AdmissionRequirementsDialog";
 
+// Convert a field value (string or JSON string) into readable markdown
+function formatResearchField(value: string | null | undefined): string {
+  if (!value) return "";
+  // Try to parse as JSON; if it is, convert to readable markdown
+  try {
+    const parsed = JSON.parse(value);
+    if (typeof parsed === "string") return parsed;
+    return jsonToMarkdown(parsed);
+  } catch {
+    return value;
+  }
+}
+
+function jsonToMarkdown(obj: unknown, depth = 0): string {
+  if (obj === null || obj === undefined) return "";
+  if (typeof obj === "string") return obj;
+  if (typeof obj === "number" || typeof obj === "boolean") return String(obj);
+  if (Array.isArray(obj)) {
+    return obj.map((item) => `- ${jsonToMarkdown(item, depth + 1).replace(/\n/g, "\n  ")}`).join("\n");
+  }
+  if (typeof obj === "object") {
+    return Object.entries(obj as Record<string, unknown>)
+      .filter(([, v]) => v !== null && v !== undefined && v !== "")
+      .map(([k, v]) => {
+        const key = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        const val = jsonToMarkdown(v, depth + 1);
+        if (val.includes("\n")) return `**${key}**:\n${val.split("\n").map((l) => "  " + l).join("\n")}`;
+        return `**${key}**: ${val}`;
+      })
+      .join("\n");
+  }
+  return String(obj);
+}
+
 export default function ProgramDetail() {
   const [, params] = useRoute("/programs/:id");
   const programId = parseInt(params?.id || "0");
@@ -293,35 +327,35 @@ export default function ProgramDetail() {
                       <div>
                         <h3 className="text-lg font-semibold mb-2">課程設置</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research?.courses || ""}</Streamdown>
+                          <Streamdown>{formatResearchField(research?.courses)}</Streamdown>
                         </div>
                       </div>
 
                       <div>
                         <h3 className="text-lg font-semibold mb-2">教職員</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research?.facultyMembers || ""}</Streamdown>
+                          <Streamdown>{formatResearchField(research?.facultyMembers)}</Streamdown>
                         </div>
                       </div>
 
                       <div>
                         <h3 className="text-lg font-semibold mb-2">入學要求</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research?.requirements || ""}</Streamdown>
+                          <Streamdown>{formatResearchField(research?.requirements)}</Streamdown>
                         </div>
                       </div>
 
                       <div>
                         <h3 className="text-lg font-semibold mb-2">項目特色</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research?.uniqueCharacteristics || ""}</Streamdown>
+                          <Streamdown>{formatResearchField(research?.uniqueCharacteristics)}</Streamdown>
                         </div>
                       </div>
 
                       <div>
                         <h3 className="text-lg font-semibold mb-2">研究領域</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research?.researchAreas || ""}</Streamdown>
+                          <Streamdown>{formatResearchField(research?.researchAreas)}</Streamdown>
                         </div>
                       </div>
 
@@ -341,7 +375,7 @@ export default function ProgramDetail() {
                         <div>
                           <h3 className="text-lg font-semibold mb-2">技術方向</h3>
                           <div className="prose prose-sm max-w-none">
-                            <Streamdown>{research.technicalFocus}</Streamdown>
+                            <Streamdown>{formatResearchField(research.technicalFocus)}</Streamdown>
                           </div>
                         </div>
                       )}
@@ -350,7 +384,7 @@ export default function ProgramDetail() {
                         <div>
                           <h3 className="text-lg font-semibold mb-2">必修課程</h3>
                           <div className="prose prose-sm max-w-none">
-                            <Streamdown>{research.requiredCourses}</Streamdown>
+                            <Streamdown>{formatResearchField(research.requiredCourses)}</Streamdown>
                           </div>
                         </div>
                       )}
@@ -359,7 +393,7 @@ export default function ProgramDetail() {
                         <div>
                           <h3 className="text-lg font-semibold mb-2">選修課程</h3>
                           <div className="prose prose-sm max-w-none">
-                            <Streamdown>{research.electiveCourses}</Streamdown>
+                            <Streamdown>{formatResearchField(research.electiveCourses)}</Streamdown>
                           </div>
                         </div>
                       )}
@@ -368,7 +402,7 @@ export default function ProgramDetail() {
                         <div>
                           <h3 className="text-lg font-semibold mb-2">Track選項</h3>
                           <div className="prose prose-sm max-w-none">
-                            <Streamdown>{research.trackOptions}</Streamdown>
+                            <Streamdown>{formatResearchField(research.trackOptions)}</Streamdown>
                           </div>
                         </div>
                       )}
@@ -376,14 +410,14 @@ export default function ProgramDetail() {
                       <div>
                         <h3 className="text-lg font-semibold mb-2">畢業要求和規劃</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research?.graduationRequirements || ""}</Streamdown>
+                          <Streamdown>{formatResearchField(research?.graduationRequirements)}</Streamdown>
                         </div>
                       </div>
 
                       <div>
                         <h3 className="text-lg font-semibold mb-2">就業資源</h3>
                         <div className="prose prose-sm max-w-none">
-                          <Streamdown>{research?.careerResources || ""}</Streamdown>
+                          <Streamdown>{formatResearchField(research?.careerResources)}</Streamdown>
                         </div>
                       </div>
                     </div>

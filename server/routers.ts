@@ -306,7 +306,7 @@ ${program.country ? `國家: ${program.country}` : ''}
           messages: [
             {
               role: "system",
-              content: "You are a research assistant specializing in graduate programs. Provide detailed, accurate information about master's programs based on the latest available data. IMPORTANT: For every field in your response, write the value as plain text or markdown — do NOT use nested JSON objects or arrays as field values. Each field must be a plain string."
+              content: "You are a research assistant specializing in graduate programs. Provide detailed, accurate information about master's programs based on the latest available data. Return your response as a JSON object."
             },
             {
               role: "user",
